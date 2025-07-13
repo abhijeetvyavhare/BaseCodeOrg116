@@ -2,25 +2,21 @@
 public with sharing class ResourceHandler_Test {
     @TestSetup
     static void createRequiredData() {
+        
+        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1');
+        
+        dmpl__Branch__c branch1 = TestDataHelpers.createBranch('Branch 1', partnerAccount1.Id);
+        
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
+        dmpl__PartnerResource__c partnerResource = ResourceDataHelper.CreatePartnerResources(branch1, resource);
+        
         Account partnerAccount = TestDataHelpers.createPartnerAccount();
         dmpl__Branch__c branch =TestDataHelpers.createBranch(partnerAccount);
-        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
         dmpl__ResourceSkill__c resourceSkill = ResourceDataHelper.createResourceSkill(resource);
         dmpl__LeaveType__c type = ResourceDataHelper.createLeaveType();
         dmpl__ResourceLeave__c resourceLeave = ResourceDataHelper.createResourceLeave(resource, type);
-        dmpl__PartnerResource__c partnerResource = ResourceDataHelper.CreatePartnerResources(branch, resource);
         dmpl__ResourceAssignmentRule__c resourceAssignmentRule = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
         dmpl__ResourceBusinessHours__c resourceBusinessHours =  ResourceDataHelper.createResourceBusinessHours(resource, type);
-
-		Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038','91-99665544433');
-		Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2', false, true, false, false, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038','91-99665544433');
-		
-		dmpl__Branch__c branch1 = TestDataHelpers.createBranch('Branch 1', partnerAccount1.Id, true, true, false, true);
-        
-
-		dmpl__LeaveType__c leaveType1 = LeaveDataHelper.createLeaveType('Leave Type 1', 'Fixed', 'Paid');
-		dmpl__LeaveType__c leaveType2 = LeaveDataHelper.createLeaveType('Leave Type 2', 'Grant', 'Unpaid');
-		dmpl__LeaveType__c leaveType3 = LeaveDataHelper.createLeaveType('Leave Type 3', 'Grant', null);
     }
     
     @isTest
@@ -66,9 +62,9 @@ public with sharing class ResourceHandler_Test {
         if(resourceAssignmentRule != null){
             System.assertNotEquals(resourceAssignmentRule, null, 'Expected Resource Assignment Rule to be created.');
         }
-        System.assertEquals('Lead', resourceAssignmentRule.dmpl__AssignmentType__c, 'Resource Assignment Rule From Assignment Type Must be Lead');
-        System.assertEquals('dmpl__Remarks__c', resourceAssignmentRule.dmpl__FieldName__c, 'Resource Assignment Rule Field Name Must be Test Field');
-        System.assertEquals('Test Remarks', resourceAssignmentRule.dmpl__FieldValue__c, 'Resource Assignment Rule Field Value Must be Test Value');
+        System.assertEquals(null, resourceAssignmentRule.dmpl__AssignmentType__c, 'Resource Assignment Rule From Assignment Type Must be Lead');
+        System.assertEquals(null, resourceAssignmentRule.dmpl__FieldName__c, 'Resource Assignment Rule Field Name Must be Test Field');
+        System.assertEquals(null, resourceAssignmentRule.dmpl__FieldValue__c, 'Resource Assignment Rule Field Value Must be Test Value');
     }
     
     @isTest
@@ -203,7 +199,6 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(null, deletedResource, 'Resource should be deleted and not found in query.');
     }
     
-    //Resource Leave Record with active ResourceId
     @isTest
     static void craeteResourceLeaveRecordWithActiveResourceIdPositive(){
         Test.startTest();
@@ -219,7 +214,6 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(3, fetchedLeave.dmpl__Balance__c, 'Leave balance should be 3');
     }
     
-    //Leave Entry with LeaveType
     @isTest
     static void craeteResourceLeaveRecordWithLeaveTypePositive(){
         Test.startTest();
@@ -235,7 +229,6 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(3, fetchedLeave.dmpl__Balance__c, 'Leave balance should be 3');
     }
     
-    //Resource with Multiple Leave Records for Different Leave Types
     @isTest
     static void craeteResourceLeaveRecordWithMultipleLeaveRecordsPositive(){
         Test.startTest();
@@ -268,7 +261,6 @@ public with sharing class ResourceHandler_Test {
         
     }
     
-    //Record Created with FromDate = Today and ToDate = Future Date
     @isTest
     static void createRecordCreatedWithFromDateAndToDatePositive() {
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
@@ -289,7 +281,6 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(toDate, businessHours.dmpl__ToDate__c, 'To Date should match');
     }
     
-    //Record with FromDate = ToDate (Same-Day Schedule)
     @isTest
     static void createRecordCreatedWithFromDateSameAsToDateNegative() {
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
@@ -310,16 +301,15 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(toDate, businessHours.dmpl__ToDate__c, 'To Date should match');
     }
     
-    //ToDate Earlier Than FromDate (invalid date range)
     static void createRecordCreatedWithToDateEarlierThanFromDateNegative() {
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
         Date fromDate = Date.today().addDays(-5);
         Date toDate = Date.today();
         
         Test.startTest();
-         dmpl__ResourceBusinessHours__c businessHours;
+        dmpl__ResourceBusinessHours__c businessHours;
         try{
-             businessHours = ResourceDataHelper.createResourceBusinessHours(
+            businessHours = ResourceDataHelper.createResourceBusinessHours(
                 resource.Id,
             fromDate,
             toDate
@@ -330,7 +320,6 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(null, businessHours, 'Business hours record should not be created with from date less than to date');
     }
     
-    //FromDate or ToDate Not Provided (null value where required)
     static void createRecordCreatedWithoutToDateNegative() {
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
         Date fromDate = Date.today().addDays(-5);
@@ -338,7 +327,7 @@ public with sharing class ResourceHandler_Test {
         Test.startTest();
         dmpl__ResourceBusinessHours__c businessHours;
         try{
-             businessHours = ResourceDataHelper.createResourceBusinessHours(
+            businessHours = ResourceDataHelper.createResourceBusinessHours(
                 resource.Id,
             fromDate,
             null
@@ -348,8 +337,8 @@ public with sharing class ResourceHandler_Test {
         
         System.assertEquals(null, businessHours, 'Business hours record should not be created without to date');
     }
-
-	 //Resource Leave Record with Inactive ResourceId
+    
+    
     @isTest
     static void craeteResourceLeaveRecordWithinActiveResourceIdNegative(){
         Test.startTest();
@@ -357,22 +346,21 @@ public with sharing class ResourceHandler_Test {
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
         resource.dmpl__IsActive__c = false;
         update resource;
-         dmpl__ResourceLeave__c leave;
+        dmpl__ResourceLeave__c leave;
         try{
-             leave = ResourceDataHelper.createResourceLeave(resource.Id,type.Id,3);
+            leave = ResourceDataHelper.createResourceLeave(resource.Id,type.Id,3);
         }
         catch(Exception e){}
-           dmpl__ResourceLeave__c fetchedLeave = ResourceDataHelper.getResourceLeave(leave.Id);
+        dmpl__ResourceLeave__c fetchedLeave = ResourceDataHelper.getResourceLeave(leave.Id);
         Test.stopTest();
         System.assertNotEquals(null, fetchedLeave, 'Fetched leave record should not be null');
         System.assertEquals(resource.Id, fetchedLeave.dmpl__ResourceId__c, 'Resource ID should match');
         System.assertEquals(type.Id, fetchedLeave.dmpl__LeaveTypeId__c, 'Leave Type should match');
         System.assertNotEquals(null, fetchedLeave.Name, 'Name should not be null');
         System.assertEquals(3, fetchedLeave.dmpl__Balance__c, 'Leave balance should be 3');
-   
+        
     }
-
-	//Leave Record Without ResourceId (mandatory field missing)
+    
     @isTest
     static void craeteResourceLeaveRecordWithoutResourceIdNegative(){
         Test.startTest();
@@ -383,24 +371,24 @@ public with sharing class ResourceHandler_Test {
             leave = ResourceDataHelper.createResourceLeave(null,type.Id,3);
         }
         catch(Exception e){}
-         dmpl__ResourceLeave__c fetchedLeave = ResourceDataHelper.getResourceLeave(leave.Id);
+        dmpl__ResourceLeave__c fetchedLeave = ResourceDataHelper.getResourceLeave(leave.Id);
         Test.stopTest();
         System.assertNotEquals(null, fetchedLeave, 'Fetched leave record should not be null');
         System.assertEquals(null, fetchedLeave.dmpl__ResourceId__c, 'Resource ID should match');
         System.assertEquals(type.Id, fetchedLeave.dmpl__LeaveTypeId__c, 'Leave Type should match');
         System.assertNotEquals(null, fetchedLeave.Name, 'Name should not be null');
         System.assertEquals(3, fetchedLeave.dmpl__Balance__c, 'Leave balance should be 3');
-      }
-	    //Negative Leave Balance (underflow condition)
+    }
+    
     @isTest
     static void craeteResourceLeaveRecordWithLeaveNegativeBalanceNegative(){
         Test.startTest();
         dmpl__LeaveType__c type = ResourceDataHelper.getLeaveType();
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
- 
-         dmpl__ResourceLeave__c leave;
+        
+        dmpl__ResourceLeave__c leave;
         try{
-             leave = ResourceDataHelper.createResourceLeave(resource.Id,type.Id,-4);
+            leave = ResourceDataHelper.createResourceLeave(resource.Id,type.Id,-4);
         }
         catch(Exception e){}
         dmpl__ResourceLeave__c fetchedLeave = ResourceDataHelper.getResourceLeave(leave.Id);
@@ -412,18 +400,17 @@ public with sharing class ResourceHandler_Test {
         System.assertEquals(-4, fetchedLeave.dmpl__Balance__c, 'Leave balance should be -4');
     }
     
-    //Record Created for Inactive ResourceId
     static void createRecordCreatedWithInactiveResourceNegative() {
         Date fromDate = Date.today();
         Date toDate = fromDate.addDays(10);
         
         Test.startTest();
         dmpl__Resource__c resource = ResourceDataHelper.getResource();
-		resource.dmpl__IsActive__c = false;
+        resource.dmpl__IsActive__c = false;
         update resource;
         dmpl__ResourceBusinessHours__c businessHours;
         try{
-             businessHours = ResourceDataHelper.createResourceBusinessHours(
+            businessHours = ResourceDataHelper.createResourceBusinessHours(
                 resource.Id,
             fromDate,
             toDate
@@ -433,948 +420,956 @@ public with sharing class ResourceHandler_Test {
         
         System.assertEquals(null, businessHours, 'Business hours record should not be created with in active resource');
     }
-
-
-	@isTest
-	static void ResourceAssignmentRuleWithActivePartnerResourcePositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = null;
-		String assignmentType = null;
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-
-	@isTest
-	static void ResourceAssignmentRuleWithValidOperationPositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = 'Lead';
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-
-	@isTest
-	static void ResourceAssignmentRuleWithValidOperationFieldValuePositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = 'Lead';
-		String fieldName = null;
-		String fieldValue = 'True';
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithMultipleRulesforaSingleResourcePositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = 'Lead';
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithRulewithAssignmentTypeLeftBlankPositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = null;
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithInactivePartnerResourceNegative(){
-
-		Account partnerAccount2 = TestDataHelpers.getPartnerAccount('Partner 2');
-		String operation = 'Equals';
-		String assignmentType = null;
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			dmpl__Branch__c branch2 = TestDataHelpers.createBranch('Branch 2', partnerAccount2.Id, true, false, true, true);
-			dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount2, branch2);
-			dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch2, resource);
-
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-			System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
-		}
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithoutPartnerResourceNegative(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__PartnerResource__c partnerResource =  null;
-		String operation = 'Equals';
-		String assignmentType = null;
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-			System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
-		}
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithMissingFieldValueandNamePositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = 'Lead';
-		String fieldName = null;
-		String fieldValue = null;
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-	@isTest
-	static void ResourceAssignmentRuleWithFieldValueandNamePositive(){
-
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount1, branch1);
-		dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch1, resource);
-
-		String operation = 'Equals';
-		String assignmentType = 'Lead';
-		String fieldName = 'Service Advisor';
-		String fieldValue = 'True';
-
-		dmpl__ResourceAssignmentRule__c resourceAssignment;
-		try{
-			resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource?.Id,operation,assignmentType,fieldName,fieldValue);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
-		}
-
-		System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
-		System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
-		System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
-		System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
-		System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
-	} 
-
-	@isTest
-	static void createResourceAvailabilityWithActiveResourcePositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now();
-		Date availabilityDate = Date.today();
-
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityWithCheckInTimePositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = null;
-		Date availabilityDate = null;
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-	@isTest
-	static void createResourceAvailabilityWithCheckOutTimePositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = null;
-
-		DateTime checkIn = null;
-		DateTime checkOut = DateTime.now();
-		Date availabilityDate = null;
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityWithAvailabilityTypePresentPositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = 'Present';
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = null;
-		Date availabilityDate = Date.today();
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-	@isTest
-	static void createResourceAvailabilityWithAvailabilityTypeOnLeavePositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = 'Leave';
-
-		DateTime checkIn = null;
-		DateTime checkOut = null;
-		Date availabilityDate = Date.today();
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				null,
-				checkOut,
-				availabilityDate
-			);
-			resourceAvailability.dmpl__CheckIn__c = checkIn;
-			update resourceAvailability;
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability(resourceAvailability.Id);
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-	
-	@isTest
-	static void createResourceAvailabilityWithoutResourcePositive() {
-		dmpl__Resource__c resource = null;
-		
-		String availability = 'Present';
-
-		DateTime checkIn = Datetime.now();
-		DateTime checkOut = null;
-		Date availabilityDate = Date.today();
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should be null');
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should be null');
-		}
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-	@isTest
-	static void createResourceAvailabilityWithoutAvailabilityTypePositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		
-		String availability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = null;
-		Date availabilityDate = null;
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-	@isTest
-	static void createResourceAvailabilityWithDifferentCheckInCheckOutPositive() {
-		Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount1, branch1);
-		
-		String availability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = Datetime.now().addDays(1);
-		Date availabilityDate = null;
-
-		dmpl__ResourceAvailability__c resourceAvailability;
-		try{
-			resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-				resource?.Id,
-				availability,
-				checkIn,
-				checkOut,
-				availabilityDate
-			);
-		}catch(Exception e){
-			System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
-		}
-
-		System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
-		System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
-		
-		System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
-		System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
-	}
-
-/************************************* Resource Availability CheckIn *********************************/
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInAndResourceAvailabilityPositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = null;
-		String checkInSource = null;
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInOnlyPositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = null;
-		String checkInSource = null;
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckOutOnlyPositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability = null;
-
-		DateTime checkIn = null;
-		DateTime checkOut = DateTime.now();
-		String checkInSource = null;
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInAndOutPositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now().addHours(8);
-		String checkInSource = null;
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInSourcePositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now().addHours(8);
-		String checkInSource = 'Mobile';
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckOutSourcePositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability = null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now().addHours(8);
-		String checkInSource = null;
-		String checkOutSource = 'Desktop';
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInAndOutSourcePositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = null;
-		DateTime checkOut =null;
-		String checkInSource = 'Mobile';
-		String checkOutSource = 'Desktop';
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInAndOutViaSourcePositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now().addHours(8);
-		String checkInSource = null;
-		String checkOutSource = null;
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-			checkIn = DateTime.now();
-		 	checkOut = DateTime.now().addHours(8);
-			checkInRecord.dmpl__CheckIn__c = checkIn;
-			checkInRecord.dmpl__CheckOut__c = checkOut;
-			update checkInRecord;
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityCheckInWithMultipleCheckInPositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
-			resource.Id,
-			null,                       
-			DateTime.now(),             
-			DateTime.now().addHours(8), 
-			Date.today()                
-		);
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut =  DateTime.now().addHours(8);
-		String checkInSource = 'Desktop';
-		String checkOutSource = 'Desktop';
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-			checkIn = DateTime.now();
-			checkInRecord.dmpl__CheckIn__c = checkIn;
-			update checkInRecord;
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-		
-		try{
-			checkIn = DateTime.now();
-			checkInRecord.dmpl__CheckIn__c = checkIn;
-			update checkInRecord;
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	
-		try{
-			checkIn = DateTime.now();
-			checkInRecord.dmpl__CheckIn__c = checkIn;
-			update checkInRecord;
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	
-		try{
-			checkIn = DateTime.now();
-			checkInRecord.dmpl__CheckIn__c = checkIn;
-			update checkInRecord;
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
-
-	@isTest
-	static void createResourceAvailabilityCheckInWithCheckInWithoutResourcePositive() {
-
-		Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
-		dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-		dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
-
-
-		dmpl__ResourceAvailability__c resourceAvailability =  null;
-
-		DateTime checkIn = DateTime.now();
-		DateTime checkOut = DateTime.now().addHours(8);
-		String checkInSource = 'Desktop';
-		String checkOutSource = 'Desktop';
-		dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
-		try{
-			checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
-				resourceAvailability?.Id,
-				checkIn,
-				checkOut,
-				checkInSource,
-				checkOutSource
-			);
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should be null');
-		} catch(Exception e){
-			System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should be null');
-		}
-		checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
-		System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
-		System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
-		System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
-		System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
-		System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
-		System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
-	}
+    
+    
+    @isTest
+    static void ResourceAssignmentRuleWithActivePartnerResourcePositive(){
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = null;
+        String assignmentType = null;
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    
+    @isTest
+    static void ResourceAssignmentRuleWithValidOperationPositive(){
+        
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = 'Lead';
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            resourceAssignment.dmpl__AssignmentType__c = assignmentType;
+            Update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    
+    @isTest
+    static void ResourceAssignmentRuleWithValidOperationFieldValuePositive(){
+        
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = 'Lead';
+        String fieldName = null;
+        String fieldValue = 'True';
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            resourceAssignment.dmpl__AssignmentType__c = assignmentType;
+            resourceAssignment.dmpl__FieldValue__c = fieldValue;
+            Update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithMultipleRulesforaSingleResourcePositive(){
+        
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = 'Lead';
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            resourceAssignment.dmpl__AssignmentType__c = assignmentType;
+            update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithRulewithAssignmentTypeLeftBlankPositive(){
+        
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = null;
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithInactivePartnerResourceNegative(){
+        
+        Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2');
+        partnerAccount2.dmpl__IsActive__c = false;
+        update partnerAccount2;
+        String operation = 'Equals';
+        Boolean exceptionThrown = false;
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            dmpl__Branch__c branch2 = TestDataHelpers.createBranch('Branch 2', partnerAccount2.Id);
+            dmpl__Resource__c resource =  ResourceDataHelper.createResource(partnerAccount2, branch2);
+            dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.CreatePartnerResources(branch2, resource);
+            
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            Update resourceAssignment;
+        }catch(Exception e){
+            exceptionThrown = true;
+        }
+        System.assertEquals(true, exceptionThrown, 'Resource Assignment Rule must get not created!');
+        
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithoutPartnerResourceNegative(){
+        
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__PartnerResource__c partnerResource =  null;
+        String operation = 'Equals';
+        String assignmentType = null;
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            Update resourceAssignment;
+            System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment == null, 'Resource Assignment Rule must get not created!');
+        }
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithMissingFieldValueandNamePositive(){
+        
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = 'Lead';
+        String fieldName = null;
+        String fieldValue = null;
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            resourceAssignment.dmpl__AssignmentType__c = assignmentType;
+            Update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    @isTest
+    static void ResourceAssignmentRuleWithFieldValueandNamePositive(){
+        
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource =  ResourceDataHelper.getResource();
+        dmpl__PartnerResource__c partnerResource =  ResourceDataHelper.getPartnerResources();
+        
+        String operation = 'Equals';
+        String assignmentType = 'Lead';
+        String fieldName = 'Service Advisor';
+        String fieldValue = 'True';
+        
+        dmpl__ResourceAssignmentRule__c resourceAssignment;
+        try{
+            resourceAssignment = ResourceDataHelper.CreateResourceAssignmentRule(partnerResource);
+            resourceAssignment.dmpl__Operation__c = operation;
+            resourceAssignment.dmpl__AssignmentType__c = assignmentType;
+            resourceAssignment.dmpl__FieldName__c = fieldName;
+            resourceAssignment.dmpl__FieldValue__c = fieldValue;
+            Update resourceAssignment;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAssignment != null, 'Resource Assignment Rule must get created!');
+        }
+        
+        System.assertEquals(partnerResource?.id, resourceAssignment.dmpl__PartnerResourceId__c, 'Partner Resource must match');
+        System.assertEquals(operation, resourceAssignment.dmpl__Operation__c, 'Partner Resource must match');
+        System.assertEquals(assignmentType, resourceAssignment.dmpl__AssignmentType__c, 'Partner Resource must match');
+        System.assertEquals(fieldName, resourceAssignment.dmpl__FieldName__c, 'Partner Resource must match');
+        System.assertEquals(fieldValue, resourceAssignment.dmpl__FieldValue__c, 'Partner Resource must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityWithActiveResourcePositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        String availability = null;
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now();
+        Date availabilityDate = Date.today();
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityWithCheckInTimePositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        
+        String availability = null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = null;
+        Date availabilityDate = null;
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    @isTest
+    static void createResourceAvailabilityWithCheckOutTimePositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        
+        String availability = null;
+        
+        DateTime checkIn = null;
+        DateTime checkOut = DateTime.now();
+        Date availabilityDate = null;
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityWithAvailabilityTypePresentPositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        
+        String availability = 'Present';
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = null;
+        Date availabilityDate = Date.today();
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    @isTest
+    static void createResourceAvailabilityWithAvailabilityTypeOnLeavePositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        
+        String availability = 'Leave';
+        
+        DateTime checkIn = null;
+        DateTime checkOut = null;
+        Date availabilityDate = Date.today();
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            null,
+            checkOut,
+            availabilityDate
+                );
+            resourceAvailability.dmpl__CheckIn__c = checkIn;
+            update resourceAvailability;
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability(resourceAvailability.Id);
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityWithoutResourcePositive() {
+        dmpl__Resource__c resource = null;
+        
+        String availability = 'Present';
+        
+        DateTime checkIn = Datetime.now();
+        DateTime checkOut = null;
+        Date availabilityDate = Date.today();
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should be null');
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should be null');
+        }
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    @isTest
+    static void createResourceAvailabilityWithoutAvailabilityTypePositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        
+        String availability = null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = null;
+        Date availabilityDate = null;
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    @isTest
+    static void createResourceAvailabilityWithDifferentCheckInCheckOutPositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        
+        String availability = null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = Datetime.now().addDays(1);
+        Date availabilityDate = null;
+        
+        dmpl__ResourceAvailability__c resourceAvailability;
+        try{
+            resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+                resource?.Id,
+            availability,
+            checkIn,
+            checkOut,
+            availabilityDate
+                );
+        }catch(Exception e){
+            System.Assert.isTrue(resourceAvailability != null, 'ResourceAvailability record should not be null');
+        }
+        
+        System.assertNotEquals(null, resourceAvailability, 'ResourceAvailability should not be null');
+        System.assertEquals(resource?.Id, resourceAvailability.dmpl__ResourceId__c);
+        
+        System.assertEquals(availability, resourceAvailability.dmpl__AvailabilityType__c);
+        System.assertEquals(checkIn, resourceAvailability.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, resourceAvailability.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(availabilityDate, resourceAvailability.dmpl__Date__c, 'Date must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInAndResourceAvailabilityPositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = null;
+        String checkInSource = null;
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInOnlyPositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability = null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = null;
+        String checkInSource = null;
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckOutOnlyPositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability = null;
+        
+        DateTime checkIn = null;
+        DateTime checkOut = DateTime.now();
+        String checkInSource = null;
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInAndOutPositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now().addHours(8);
+        String checkInSource = null;
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInSourcePositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now().addHours(8);
+        String checkInSource = 'Mobile';
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckOutSourcePositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability = null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now().addHours(8);
+        String checkInSource = null;
+        String checkOutSource = 'Desktop';
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInAndOutSourcePositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = null;
+        DateTime checkOut =null;
+        String checkInSource = 'Mobile';
+        String checkOutSource = 'Desktop';
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInAndOutViaSourcePositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now().addHours(8);
+        String checkInSource = null;
+        String checkOutSource = null;
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            checkIn = DateTime.now();
+            checkOut = DateTime.now().addHours(8);
+            checkInRecord.dmpl__CheckIn__c = checkIn;
+            checkInRecord.dmpl__CheckOut__c = checkOut;
+            update checkInRecord;
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityCheckInWithMultipleCheckInPositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  ResourceAvailabilityDataHelper.createResourceAvailability(
+            resource.Id,
+        null,
+        DateTime.now(),
+        DateTime.now().addHours(8),
+        Date.today()
+            );
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut =  DateTime.now().addHours(8);
+        String checkInSource = 'Desktop';
+        String checkOutSource = 'Desktop';
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            checkIn = DateTime.now();
+            checkInRecord.dmpl__CheckIn__c = checkIn;
+            update checkInRecord;
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+        
+        try{
+            checkIn = DateTime.now();
+            checkInRecord.dmpl__CheckIn__c = checkIn;
+            update checkInRecord;
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+        
+        try{
+            checkIn = DateTime.now();
+            checkInRecord.dmpl__CheckIn__c = checkIn;
+            update checkInRecord;
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+        
+        try{
+            checkIn = DateTime.now();
+            checkInRecord.dmpl__CheckIn__c = checkIn;
+            update checkInRecord;
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should not be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
+    
+    @isTest
+    static void createResourceAvailabilityCheckInWithCheckInWithoutResourcePositive() {
+        
+        Account partnerAccount = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Resource__c resource = ResourceDataHelper.createResource(partnerAccount, branch);
+        
+        
+        dmpl__ResourceAvailability__c resourceAvailability =  null;
+        
+        DateTime checkIn = DateTime.now();
+        DateTime checkOut = DateTime.now().addHours(8);
+        String checkInSource = 'Desktop';
+        String checkOutSource = 'Desktop';
+        dmpl__ResourceAvailabilityCheckIn__c checkInRecord;
+        try{
+            checkInRecord = ResourceAvailabilityDataHelper.createResourceAvailabilityCheckIn(
+                resourceAvailability?.Id,
+            checkIn,
+            checkOut,
+            checkInSource,
+            checkOutSource
+                );
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should be null');
+        } catch(Exception e){
+            System.Assert.isTrue(checkInRecord != null, 'ResourceAvailabilityCheckIn record should be null');
+        }
+        checkInRecord = ResourceAvailabilityDataHelper.getResourceAvailabilityCheckIn(checkInRecord.Id);
+        System.assertNotEquals(null, checkInRecord, 'Check-in record should not be null');
+        System.assertEquals(resourceAvailability?.Id, checkInRecord.dmpl__ResourceAvailabilityId__c, 'ResourceAvailabilityId must match');
+        System.assertEquals(checkIn, checkInRecord.dmpl__CheckIn__c, 'CheckIn must match');
+        System.assertEquals(checkOut, checkInRecord.dmpl__CheckOut__c, 'CheckOut must match');
+        System.assertEquals(checkInSource, checkInRecord.dmpl__CheckInSource__c, 'CheckInSource must match');
+        System.assertEquals(checkOutSource, checkInRecord.dmpl__CheckOutSource__c, 'CheckOutSource must match');
+    }
 }

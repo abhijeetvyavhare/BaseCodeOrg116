@@ -133,4 +133,201 @@ public with sharing class ResourceAvailabilityHandler_Test {
 		}
 		System.assertEquals(null, deletedAvailability, 'ResourceAvailability should be deleted and not found in query.');
 	}
+
+    @isTest
+    static void createAvailabilityDataWithActiveResourceAvailabilityIdAndResourceIdPositive(){
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        null,
+        null,
+        null
+            );
+        dmpl__ResourceAvailabilityData__c fetchedavAilabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        Test.stopTest();
+        System.assertNotEquals(null, fetchedavAilabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, fetchedavAilabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, fetchedavAilabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        
+    }
+    
+    @isTest
+    static void createAvailabilityDataWithTypeAndAttendanceTimePositive() {
+        
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        DateTime attendanceTime = DateTime.now();
+        
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        null,
+        'Check-In',
+        attendanceTime
+            );
+        
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        
+        Test.stopTest();
+        
+        System.assertNotEquals(null, fetchedAvailabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, fetchedAvailabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, fetchedAvailabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        System.assertEquals('Check-In', fetchedAvailabilityData.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(attendanceTime, fetchedAvailabilityData.dmpl__Time__c, 'Attendance time should match');
+    }
+    
+    @isTest
+    static void createAvailabilityDataWithActiveBranchPositive() {
+        
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        dmpl__Branch__c branch = TestDataHelpers.getBranch();
+        DateTime attendanceTime = DateTime.now();
+        
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+    branch.Id,
+        'Check-In',
+        attendanceTime
+            );
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        
+        Test.stopTest();
+        
+        System.assertNotEquals(null, fetchedAvailabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, fetchedAvailabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, fetchedAvailabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        System.assertEquals('Check-In', fetchedAvailabilityData.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(attendanceTime, fetchedAvailabilityData.dmpl__Time__c, 'Attendance time should match');
+        System.assertEquals(branch.Id, fetchedAvailabilityData.dmpl__BranchId__c, 'Branch should match');
+    }
+    
+    @isTest
+    static void createAvailabilityDataWithcurrentAttendanceTimePositive() {
+        
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        DateTime attendanceTime = DateTime.now();
+        
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        null,
+        'Check-In',
+        attendanceTime
+            );
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        
+        Test.stopTest();
+        
+        System.assertNotEquals(null, fetchedAvailabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, fetchedAvailabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, fetchedAvailabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        System.assertEquals('Check-In', fetchedAvailabilityData.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(attendanceTime, fetchedAvailabilityData.dmpl__Time__c, 'Attendance time should match');
+    }
+    
+    @isTest
+    static void createAvailabilityDataWithMultipleEntriesforSameResourcePositive() {
+        
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        dmpl__Branch__c branch = TestDataHelpers.getBranch();
+        DateTime attendanceTime = DateTime.now();
+        DateTime checkOutTime = DateTime.now().addHours(3);
+        
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        branch.Id,
+        'Check-In',
+        attendanceTime
+            );
+        
+        dmpl__ResourceAvailabilityData__c availabilityData2 = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        branch.Id,
+        'Check-Out',
+        checkOutTime
+            );
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData2 = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData2.Id);
+        
+        Test.stopTest();
+        
+        System.assertNotEquals(null, fetchedAvailabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, fetchedAvailabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, fetchedAvailabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        System.assertEquals('Check-In', fetchedAvailabilityData.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(attendanceTime, fetchedAvailabilityData.dmpl__Time__c, 'Attendance time should match');
+        System.assertEquals(branch.Id, fetchedAvailabilityData.dmpl__BranchId__c, 'Branch should match');
+        System.assertEquals('Check-Out', fetchedAvailabilityData2.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(checkOutTime, fetchedAvailabilityData2.dmpl__Time__c, 'Attendance time should match');
+        
+    }
+    
+    @isTest
+    static void updateAvailabilityDataWithAttendanceTimePositive() {
+        
+        Test.startTest();
+        dmpl__ResourceAvailability__c resourceAvailability = ResourceAvailabilityDataHelper.getResourceAvailability();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        dmpl__Branch__c branch = TestDataHelpers.getBranch();
+        DateTime attendanceTime = DateTime.now();
+        DateTime checkOutTime = DateTime.now().addHours(3);
+        
+        dmpl__ResourceAvailabilityData__c availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+            resource.Id,
+        resourceAvailability.Id,
+        branch.Id,
+        'Check-In',
+        attendanceTime
+            );
+        dmpl__ResourceAvailabilityData__c fetchedAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(availabilityData.Id);
+        fetchedAvailabilityData.dmpl__AttendenceTime__c = checkOutTime;
+        fetchedAvailabilityData.dmpl__Time__c = checkOutTime;
+        Update fetchedAvailabilityData;
+        Test.stopTest();
+        dmpl__ResourceAvailabilityData__c updaetdAvailabilityData = ResourceAvailabilityDataHelper.getResourceAvailabilityData(fetchedAvailabilityData.Id);
+        
+        System.assertNotEquals(null, updaetdAvailabilityData, 'Availability data should not be null');
+        System.assertEquals(resource.Id, updaetdAvailabilityData.dmpl__ResourceId__c, 'Resource ID should match');
+        System.assertEquals(resourceAvailability.Id, updaetdAvailabilityData.dmpl__ResourceAvailabilityId__c, 'Resource Availability ID should match');
+        System.assertEquals('Check-In', updaetdAvailabilityData.dmpl__Type__c, 'Type should be Check-In');
+        System.assertEquals(checkOutTime, updaetdAvailabilityData.dmpl__Time__c, 'Attendance time should match');
+        System.assertEquals(branch.Id, updaetdAvailabilityData.dmpl__BranchId__c, 'Branch should match');
+        
+    }
+    
+    @isTest
+    static void createAvailabilityDataWithoutResourceAvailabilityNegative() {
+        
+        Test.startTest();
+        dmpl__Resource__c resource = ResourceDataHelper.getResource();
+        dmpl__Branch__c branch = TestDataHelpers.getBranch();
+        DateTime attendanceTime = DateTime.now();
+        dmpl__ResourceAvailabilityData__c availabilityData;
+        try{
+             availabilityData = ResourceAvailabilityDataHelper.createResourceAvailabilityData(
+                resource.Id,
+            null,
+            branch.Id,
+            'Check-In',
+            attendanceTime
+                );
+        }catch(Exception e){}
+        Test.stopTest();
+        
+        System.assertEquals(null, availabilityData, 'Availability data should not be created missing resource availability');
+    }
 }

@@ -755,7 +755,7 @@ public static dmpl__ItemInventoryAttribute__c getItemInventoryAttribute(dmpl__It
     public static dmpl__SKU__c createSKU(Boolean isDefault, dmpl__Item__c item) {
         return (dmpl__SKU__c) TestFactory.createSObject(
             new dmpl__SKU__c(
-                dmpl__ItemId__c = item.Id,
+                dmpl__ItemId__c = item?.Id??null,
                 dmpl__IsDefault__c = isDefault,
                 Name = 'Test SKU'
             ),
@@ -781,6 +781,15 @@ public static dmpl__ItemInventoryAttribute__c getItemInventoryAttribute(dmpl__It
             SELECT Id, dmpl__ItemId__c, dmpl__IsDefault__c, Name
             FROM dmpl__SKU__c
             WHERE dmpl__ItemId__c = :itemId
+            LIMIT 1
+        ];
+    }
+
+     public static dmpl__SKU__c getSKU(dmpl__SKU__c sku) {
+        return [
+            SELECT Id, dmpl__ItemId__c, dmpl__IsDefault__c, Name, dmpl__ProductColor__c,dmpl__QuantityUnitOfMeasure__c
+            FROM dmpl__SKU__c
+            WHERE Id = :sku.Id
             LIMIT 1
         ];
     }

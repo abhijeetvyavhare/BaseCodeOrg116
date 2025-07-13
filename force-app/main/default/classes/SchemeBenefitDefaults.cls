@@ -4,6 +4,7 @@ public with sharing class SchemeBenefitDefaults implements TestFactory.FieldDefa
         return new Map<String, Object>{
             'dmpl__Title__c'               => 'Rate Off',
             'dmpl__RewardType__c'          => 'Discounted Item',
+            'dmpl__RewardType__c'          => 'Discounted Item',
             'dmpl__DiscountAmount__c'      => 0,
             'dmpl__DiscountedItemId__c'    => null,
             'dmpl__DiscountedItemQuantity__c' => null,

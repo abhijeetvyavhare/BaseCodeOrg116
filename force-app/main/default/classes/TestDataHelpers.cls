@@ -402,7 +402,12 @@ public class TestDataHelpers {
         );
     }
     public static dmpl__ItemAlternate__c getItemAlternate() {
-        return [SELECT Id, Name FROM dmpl__ItemAlternate__c LIMIT 1];
+        return [SELECT Id, Name,
+                dmpl__ItemId__c,
+                dmpl__AlternateItemId__c,
+                dmpl__AlternateItemName__c,
+                dmpl__AlternateType__c,
+                dmpl__EffectiveFromDate__c FROM dmpl__ItemAlternate__c LIMIT 1];
     }
  
     public static dmpl__ItemLot__c createItemLot(
@@ -1238,7 +1243,6 @@ public class TestDataHelpers {
         String accountGroupName,
         String ruleSuccessCriteria,
         String accountGroupType
-
     ) {
         return (dmpl__AccountGroup__c) TestFactory.createSObject(
             new dmpl__AccountGroup__c(
@@ -2039,6 +2043,21 @@ public class TestDataHelpers {
         );
     }
 
+    public static dmpl__SchemeCondition__c createSchemeCondition(
+        Id schemeId,
+        Id schemeLineId,
+        Id itemId
+    ) {
+        return (dmpl__SchemeCondition__c) TestFactory.createSObject(
+            new dmpl__SchemeCondition__c(
+                dmpl__SchemeId__c = schemeId,
+                dmpl__SchemeLineId__c = schemeLineId,
+                dmpl__ItemId__c = itemId
+            ),
+            'SchemeConditionDefaults',
+            true
+        );
+    }
     public static dmpl__SchemeCondition__c createSchemeCondition(
         Id schemeLineId,
         Id schemeId,

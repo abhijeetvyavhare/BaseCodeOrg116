@@ -48,20 +48,16 @@ public with sharing class AccountHandler_Test {
 
         dmpl__AccountGroupMember__c accountGroupMember1 = AccountDataHelper.createAccountGroupMember(accountGroup1.Id, partnerAccount1.Id, 'Batch Instance 1');
         dmpl__AccountGroupMember__c accountGroupMember2 = AccountDataHelper.createAccountGroupMember(accountGroup1.Id, partnerAccount2.Id, 'Batch Instance 2');
-        //dmpl__AccountGroupMember__c accountGroupMember3 = AccountDataHelper.createAccountGroupMember(accountGroup1.Id, partnerAccount5.Id, 'Batch Instance 3');
         dmpl__AccountGroupMember__c accountGroupMember4 = AccountDataHelper.createAccountGroupMember(accountGroup2.Id, partnerAccount3.Id, 'Batch Instance 4');
         dmpl__AccountGroupMember__c accountGroupMember5 = AccountDataHelper.createAccountGroupMember(accountGroup2.Id, partnerAccount4.Id, 'Batch Instance 5');
 
         dmpl__AccountGroupMember__c accountGroupMember6 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount1.Id, 'Batch Instance 6');
         dmpl__AccountGroupMember__c accountGroupMember7 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount3.Id, 'Batch Instance 7');
-        //dmpl__AccountGroupMember__c accountGroupMember8 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount5.Id, 'Batch Instance 8');
         dmpl__AccountGroupMember__c accountGroupMember9 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount6.Id, 'Batch Instance 9');
-        //dmpl__AccountGroupMember__c accountGroupMember10 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount8.Id, 'Batch Instance 10');
         dmpl__AccountGroupMember__c accountGroupMember11 = AccountDataHelper.createAccountGroupMember(accountGroup3.Id, customerAccount10.Id, 'Batch Instance 11');
         dmpl__AccountGroupMember__c accountGroupMember12 = AccountDataHelper.createAccountGroupMember(accountGroup4.Id, customerAccount2.Id, 'Batch Instance 12');
         dmpl__AccountGroupMember__c accountGroupMember13 = AccountDataHelper.createAccountGroupMember(accountGroup4.Id, customerAccount4.Id, 'Batch Instance 13');
         dmpl__AccountGroupMember__c accountGroupMember14 = AccountDataHelper.createAccountGroupMember(accountGroup4.Id, customerAccount7.Id, 'Batch Instance 14');
-        //dmpl__AccountGroupMember__c accountGroupMember15 = AccountDataHelper.createAccountGroupMember(accountGroup4.Id, customerAccount9.Id, 'Batch Instance 15');
 
         Account supplierAccount1 = TestDataHelpers.createSupplierAccount('Supplier 1','55 Industrial Park Road','Ahmedabad','Gujarat','India','380015','55 Industrial Park Road','Ahmedabad','Gujarat','India','380015', '9988776564');
 
@@ -195,7 +191,6 @@ public with sharing class AccountHandler_Test {
         update scheme20;
 
          Test.startTest();
-        //dmpl__AccountGroup__c accountGroup1 = TestDataHelpers.createAccountGroup('Account Group 1',null);
         dmpl__Resource__c resource1 = TestDataHelpers.getResource();
         dmpl__VisitRoute__c route =VisitPlanTestDataHelpers.CreateVisitRoute(accountGroup1,partnerAccount1,resource1);
         dmpl__VisitRouteStop__c routeStop=VisitPlanTestDataHelpers.CreateVisitRouteStop(customerAccount1,route);
@@ -1121,8 +1116,6 @@ static void createAccountStockWithVisitPlanAndDifferentVisitNegative() {
         System.debug('Expected exception caught when updating to a different VisitPlan: ' + e.getMessage());
     }
     Test.stopTest();
-
-    //System.assert(didThrowException, 'Expected an exception due to updating with a different VisitPlan, but none was thrown.');
     }
 
 
