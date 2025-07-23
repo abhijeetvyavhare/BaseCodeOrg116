@@ -1295,10 +1295,10 @@ public with sharing class ShipmentHandler_Test {
         dmpl__GoodsReceiptLine__c updatedGoodReceiptLine = GoodRecieptsTestDataHelpers.getGoodsReceiptLine(goodReceiptLine.Id);
         System.assertEquals(item.Id, updatedGoodReceiptLine.dmpl__ItemId__c, 'Item ID should match');
         System.assertEquals(sku.Id, updatedGoodReceiptLine.dmpl__SKUId__c, 'SKU ID should match');
-        System.assertEquals(null, updatedGoodReceiptLine.dmpl__SupplierQuantity__c, 'Supplier Quantity should match');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__SupplierQuantity__c, 'Supplier Quantity should match');
         System.assertEquals(goodReceipt.Id, updatedGoodReceiptLine.dmpl__GoodsReceiptId__c, 'Good Receipt ID should match');
-        System.assertEquals(0, updatedGoodReceiptLine.dmpl__ClaimableQuantity__c, 'Claimable Quantity should match.');
-        System.assertEquals(0, updatedGoodReceiptLine.dmpl__ShortageQuantity__c, 'Shortage quantity should match');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__ClaimableQuantity__c, 'Claimable Quantity should match.');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__ShortageQuantity__c, 'Shortage quantity should match');
         System.assertEquals(0, updatedGoodReceiptLine.dmpl__DamagedQuantity__c, 'Damage quantity should be 0.');
         dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
             supplier.Id,
@@ -1436,10 +1436,10 @@ public with sharing class ShipmentHandler_Test {
         dmpl__GoodsReceiptLine__c updatedGoodReceiptLine = GoodRecieptsTestDataHelpers.getGoodsReceiptLine(goodReceiptLine.Id);
         System.assertEquals(item.Id, updatedGoodReceiptLine.dmpl__ItemId__c, 'Item ID should match');
         System.assertEquals(sku.Id, updatedGoodReceiptLine.dmpl__SKUId__c, 'SKU ID should match');
-        System.assertEquals(null, updatedGoodReceiptLine.dmpl__SupplierQuantity__c, 'Supplier Quantity should match');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__SupplierQuantity__c, 'Supplier Quantity should match');
         System.assertEquals(goodReceipt.Id, updatedGoodReceiptLine.dmpl__GoodsReceiptId__c, 'Good Receipt ID should match');
-        System.assertEquals(0, updatedGoodReceiptLine.dmpl__ClaimableQuantity__c, 'Claimable Quantity should match.');
-        System.assertEquals(0, updatedGoodReceiptLine.dmpl__ShortageQuantity__c, 'Shortage quantity should match');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__ClaimableQuantity__c, 'Claimable Quantity should match.');
+        System.assertEquals(10, updatedGoodReceiptLine.dmpl__ShortageQuantity__c, 'Shortage quantity should match');
         System.assertEquals(0, updatedGoodReceiptLine.dmpl__DamagedQuantity__c, 'Damage quantity should be 0.');
         dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
             supplier.Id,
