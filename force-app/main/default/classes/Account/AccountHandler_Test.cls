@@ -1,0 +1,2558 @@
+@isTest
+public with sharing class AccountHandler_Test {
+    @TestSetup
+    static void createRequiredData(){
+        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1');
+        Account customerAccount1 = TestDataHelpers.createCustomerAccount('Customer 1');
+        Account supplierAccount1 = TestDataHelpers.createSupplierAccount('Supplier 1');
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.createAccountGroup('Account Group 1');
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(1, accountGroup1.Id);
+        dmpl__Branch__c branch1 = TestDataHelpers.createBranch('Branch 1', partnerAccount1.Id);
+        dmpl__Item__c item1 = TestDataHelpers.createItem('Item 1', 'Product');
+        dmpl__ContactAddress__c address = TestDataHelpers.createContactAddress('Address 1', customerAccount1.Id);
+        dmpl__PriceList__c priceList1 = TestDataHelpers.createPriceList('Price List 1', partnerAccount1.Id, branch1.Id);
+        dmpl__PriceListRules__c priceListRule1 = TestDataHelpers.createPriceListRules(priceList1.id, item1.id, 1500);
+        dmpl__TaxGroup__c taxGroupGST28 = TestDataHelpers.createTaxGroup('GST 28', partnerAccount1.Id, branch1.Id);
+        dmpl__Tax__c taxCGST14_8 = TestDataHelpers.createTax('CGST', taxGroupGST28.Id, 14);
+        dmpl__Tax__c taxSGST14_8 = TestDataHelpers.createSGSTTax('SGST', taxGroupGST28.Id, 14);
+        dmpl__TaxGroupRule__c taxGroupRule = TestDataHelpers.createTaxGroupRule(item1.Id, taxGroupGST28.Id);
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup1.Id, 'Test batch instance id');
+        dmpl__AccountLocations__c setupLocation = AccountDataHelper.createAccountLocation('Test Setup Location');
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(customerAccount1.Id, 200);
+        dmpl__AccountStock__c accountStock = AccountDataHelper.createAccountStock(1000);
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.createGLAccount(
+            'ICICI Bank', 
+            'Bank', 
+            true, 
+            partnerAccount1.Id, 
+            branch1.Id
+        );
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(glAccount1.Id, 1000);
+        Date startDate = Date.newInstance(2026, 1, 1);
+        Date endDate = Date.newInstance(2026, 12, 31);
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(customerAccount1.Id, startDate,endDate);
+    }
+
+    @isTest
+    static void createPartnerAccountPositive() {
+        Account partnerAccount = AccountDataHelper.getAccountByName('Partner 1');
+        System.assertNotEquals(partnerAccount, null, 'Expected partnerAccount to be created.');
+    }
+
+    @isTest
+    static void createCustomerAccountPositive() {
+        Account customerAccount = AccountDataHelper.getAccountByName('Customer 1');
+        System.assertNotEquals(customerAccount, null, 'Expected customerAccount to be created.');
+    }
+
+    @isTest 
+    static void createSupplierAccountPositive(){
+        Account supplierAccount = AccountDataHelper.getAccountByName('Supplier 1');
+        System.assertNotEquals(supplierAccount, null, 'Expected supplier account to be created.');
+    }
+
+    @isTest 
+    static void updatePartnerAccountPositive(){
+        Account partnerAccount = AccountDataHelper.getAccountByName('Partner 1');
+        partnerAccount.Name = 'UpdatedPartnerAccount';
+        test.startTest();
+        update partnerAccount;
+        test.stopTest();
+        Account updatedPartnerAccount = AccountDataHelper.getAccountById(partnerAccount.Id);
+        System.assertEquals(String.valueOf(updatedPartnerAccount.Name),'UpdatedPartnerAccount','Expected the account to be updated for partner account.');
+    }
+
+    @isTest 
+    static void updateCustomerAccountPositive(){
+        Account customerAccount = AccountDataHelper.getAccountByName('Customer 1');
+        customerAccount.Name = 'UpdatedCustomerAccount';
+        test.startTest();
+        update customerAccount;
+        test.stopTest();
+        Account updatedCustomerAccount = AccountDataHelper.getAccountById(customerAccount.Id);
+        System.assertEquals(updatedCustomerAccount.Name,'UpdatedCustomerAccount','Expected the account to be updated for customer account.');
+    }
+
+    @isTest 
+    static void updateSupplierAccountPositive(){
+        Account supplierAccount = AccountDataHelper.getAccountByName('Supplier 1');
+        supplierAccount.Name = 'UpdatedSupplierAccount';
+        test.startTest();
+        update supplierAccount;
+        test.stopTest();
+        Account updatedSupplierAccount = AccountDataHelper.getAccountById(supplierAccount.Id);
+        System.assertEquals(updatedSupplierAccount.Name,'UpdatedSupplierAccount','Expected the supplier account to be updated.');
+    }
+
+    @isTest 
+    static void deletePartnerAccountPositive(){
+        Account partnerAccount = AccountDataHelper.getAccountByName('Partner 1');
+        test.startTest();
+        delete partnerAccount;
+        test.stopTest();
+        Account deletedPartnerAccount = AccountDataHelper.getAccountById(partnerAccount.Id);
+        System.assertEquals(deletedPartnerAccount,null,'Expected the partner account to be deleted.');
+    }
+
+    @isTest
+    static void deleteCustomerAccountPositive(){
+        Account customerAccount = AccountDataHelper.getAccountByName('Customer 1');
+        test.startTest();
+        delete customerAccount;
+        test.stopTest();
+        Account deletedCustomerAccount = AccountDataHelper.getAccountById(customerAccount.Id);
+        System.assertEquals(deletedCustomerAccount,null,'Expected the customer account to be deleted.');
+    }
+
+    @isTest 
+    static void deleteSupplierAccountPositive(){
+        Account supplierAccount = AccountDataHelper.getAccountByName('Supplier 1');
+        test.startTest();
+        delete supplierAccount;
+        test.stopTest();
+        Account deletedSupplierAccount = AccountDataHelper.getAccountById(supplierAccount.Id);
+        System.assertEquals(deletedSupplierAccount,null,'Expected the supplier account to be deleted.');
+    }
+
+    @isTest 
+    static void createAccountGroupPositive() {
+        dmpl__AccountGroup__c setupAccountGroup = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        System.assertNotEquals(setupAccountGroup, null, 'Expected account group to be created.');
+    }
+
+    @isTest 
+    static void updateAccountGroupPositive() {
+        dmpl__AccountGroup__c setupAccountGroup = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        setupAccountGroup.Name = 'Updated Name';
+        Test.startTest();
+        update setupAccountGroup;
+        Test.stopTest();
+        dmpl__AccountGroup__c updated = AccountDataHelper.getAccountGroupById(setupAccountGroup.Id);
+        System.assertEquals(updated.Name, 'Updated Name', 'Account group name should be updated.');
+    }
+
+    @isTest 
+    static void deleteAccountGroupPositive() {
+        dmpl__AccountGroup__c setupAccountGroup = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        delete setupAccountGroup;
+        Test.stopTest();
+        dmpl__AccountGroup__c deletedGroups = AccountDataHelper.getAccountGroupById(setupAccountGroup.Id);
+        System.assertEquals(deletedGroups, null, 'Account group should be deleted.');
+    }
+
+    @isTest 
+    static void createAccountGroupRulePositive() {
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.getAccountGroupRuleBySequenceNumber(1);
+        System.assertNotEquals(accountGroupRule, null, 'Expected accountGroupRule to be created.');
+    }
+
+    @isTest
+    static void updateAccountGroupRulePositive() {
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.getAccountGroupRuleBySequenceNumber(1);
+        accountGroupRule.dmpl__SequenceNumber__c = 5;
+        Test.startTest();
+        update accountGroupRule;
+        Test.stopTest();
+        dmpl__AccountGroupRule__c updated = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(updated.dmpl__SequenceNumber__c, 5, 'Account group rule sequence number should be updated.');
+    }
+
+    @isTest
+    static void deleteAccountGroupRulePositive() {
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.getAccountGroupRuleBySequenceNumber(1);
+        Test.startTest();
+        delete accountGroupRule;
+        Test.stopTest();
+        dmpl__AccountGroupRule__c deletedLines = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(deletedLines, null, 'Account group rule should be deleted.');
+    }
+
+    @isTest 
+    static void createAccountGroupMemberPositive() {
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.getAccountGroupMemberByBatchInstanceId('Test batch instance id');
+        System.assertNotEquals(accountGroupMember, null, 'Expected accountGroupMember to be created.');
+    }
+
+    @isTest 
+    static void updateAccountGroupMemberPositive() {
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.getAccountGroupMemberByBatchInstanceId('Test batch instance id');
+        accountGroupMember.dmpl__BatchInstanceId__c = 'Updated batch instance id';
+        Test.startTest();
+        update accountGroupMember;
+        Test.stopTest();
+        dmpl__AccountGroupMember__c updated = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(updated.dmpl__BatchInstanceId__c, 'Updated batch instance id', 'Account group member batch instance ID should be updated.');
+    }
+
+    @isTest
+    static void deleteAccountGroupMemberPositive() {
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.getAccountGroupMemberByBatchInstanceId('Test batch instance id');
+        Test.startTest();
+        delete accountGroupMember;
+        Test.stopTest();
+        dmpl__AccountGroupMember__c deletedMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(deletedMember, null, 'Account group member should be deleted.');
+    }
+
+    @isTest 
+    static void createAccountLocationPositive() {
+        dmpl__AccountLocations__c setUpLocation = AccountDataHelper.getAccountLocationByName('Test Setup Location');
+        System.assertNotEquals(setUpLocation, null, 'Expected account location to be created.');
+    }
+
+    @isTest 
+    static void updateAccountLocationPositive() {
+        dmpl__AccountLocations__c setupLocation = AccountDataHelper.getAccountLocationByName('Test Setup Location');
+        setupLocation.Name = 'Updated Name';
+        Test.startTest();
+        update setupLocation;
+        Test.stopTest();
+        dmpl__AccountLocations__c updated = AccountDataHelper.getAccountLocationById(setupLocation.Id);
+        System.assertEquals(updated.Name, 'Updated Name', 'Account location name should be updated.');
+    }
+
+    @isTest 
+    static void deleteAccountLocationPositive() {
+        dmpl__AccountLocations__c setupLocation = AccountDataHelper.getAccountLocationByName('Test Setup Location');
+        Test.startTest();
+        delete setupLocation;
+        Test.stopTest();
+        dmpl__AccountLocations__c deletedLines = AccountDataHelper.getAccountLocationById(setupLocation.Id);
+        System.assertEquals(deletedLines, null, 'Account location should be deleted.');
+    }
+
+    @isTest
+    static void createAccountRewardLedgerPositive() {
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.getAccountRewardLedgerByRewardPoints(200);
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+    }
+
+    @isTest
+    static void updateAccountRewardLedgerPositive() {
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.getAccountRewardLedgerByRewardPoints(200);
+        accountRewardLedger.dmpl__RewardPoints__c = 300;
+        Test.startTest();
+        update accountRewardLedger;
+        Test.stopTest();
+        dmpl__AccountRewardLedger__c updated = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(updated.dmpl__RewardPoints__c, 300, 'Account reward ledger reward points should be updated.');
+    }
+
+    @isTest
+    static void deleteAccountRewardLedgerPositive() {
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.getAccountRewardLedgerByRewardPoints(200);
+        Test.startTest();
+        delete accountRewardLedger;
+        Test.stopTest();
+        dmpl__AccountRewardLedger__c deletedLines = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(deletedLines, null, 'Account reward ledger should be deleted.');
+    }
+
+    @isTest
+    static void createAccountStockPositive() {
+        dmpl__AccountStock__c accountStock = AccountDataHelper.getAccountStockByQuantity(1000);
+        System.assertNotEquals(accountStock, null, 'Expected account stock to be created.');
+    }
+
+    @isTest
+    static void updateAccountStockPositive() {
+        dmpl__AccountStock__c accountStock = AccountDataHelper.getAccountStockByQuantity(1000);
+        accountStock.dmpl__Quantity__c = 2000;
+        Test.startTest();
+        update accountStock;
+        Test.stopTest();
+        dmpl__AccountStock__c updated = AccountDataHelper.getAccountStockById(accountStock.Id);
+        System.assertEquals(updated.dmpl__Quantity__c, 2000, 'Account stock quantity should be updated.');
+    }
+
+    @isTest
+    static void deleteAccountStockPositive() {
+        dmpl__AccountStock__c accountStock = AccountDataHelper.getAccountStockByQuantity(1000);
+        Test.startTest();
+        delete accountStock;
+        Test.stopTest();
+        dmpl__AccountStock__c deletedLines = AccountDataHelper.getAccountStockById(accountStock.Id);
+        System.assertEquals(deletedLines, null, 'Account stock should be deleted.');
+    }
+
+    @isTest
+    static void createAccountUserPositive(){
+        dmpl__AccountUser__c accountUser = AccountDataHelper.getAccountUserByEffectiveFromDate(Date.newInstance(2026, 1, 1));
+        System.AssertNotEquals(accountUser, null, 'Expected account user to be created.');
+    }
+
+    @isTest
+    static void updateAccountUserPositive(){
+        dmpl__AccountUser__c accountUser = AccountDataHelper.getAccountUserByEffectiveFromDate(Date.newInstance(2026, 1, 1));
+        accountUser.dmpl__DateEffectiveFrom__c = Date.newInstance(2026, 2, 1);
+        Test.startTest();
+        update accountUser;
+        Test.stopTest();
+        dmpl__AccountUser__c updated = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(updated.dmpl__DateEffectiveFrom__c, Date.newInstance(2026, 2, 1), 'Account user effective from date should be updated.');
+    }
+
+    @isTest
+    static void deleteAccountUserPositive(){
+        dmpl__AccountUser__c accountUser = AccountDataHelper.getAccountUserByEffectiveFromDate(Date.newInstance(2026, 1, 1));
+        Test.startTest();
+        delete accountUser;
+        Test.stopTest();
+        dmpl__AccountUser__c deletedLines = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(deletedLines, null, 'Account user should be deleted.');
+    }
+
+    @isTest
+    static void createAccountBalancePositive() {
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.getAccountBalanceByAmount(1000);
+        System.assertNotEquals(accountBalance, null, 'Expected account balance to be created.');
+    }
+
+    @isTest
+    static void updateAccountBalancePositive() {
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.getAccountBalanceByAmount(1000);
+        accountBalance.dmpl__Amount__c = 1500;
+        Test.startTest();
+        update accountBalance;
+        Test.stopTest();
+        dmpl__AccountBalance__c updated = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(updated.dmpl__Amount__c, 1500, 'Account balance amount should be updated.');
+    }
+    
+    @isTest
+    static void deleteAccountBalancePositive() {
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.getAccountBalanceByAmount(1000);
+        Test.startTest();
+        delete accountBalance;
+        Test.stopTest();
+        dmpl__AccountBalance__c deletedLines = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(deletedLines, null, 'Account balance should be deleted.');
+    }
+
+    @isTest 
+    static void createAnAccountGroupWithValidNamePositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Discount', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup1.Id, null, 'Expected account group to be created.');
+        accountGroup1 = AccountDataHelper.getAccountGroupById(accountGroup1.Id);
+        System.assertEquals(accountGroup1.Name, 'Account Group 1', 'Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup1.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Discount".');
+        System.assertEquals(accountGroup1.dmpl__AccountGroupType__c, 'Discount', 'Expected account group type to be "Discount".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createAnAccountGroupWithoutANameNegativeNew() {
+        Test.startTest();
+        try {
+            dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+                '', 
+                'Discount', 
+                'Field Filter', 
+                '', 
+                ''
+            );
+            System.assert(false, 'Expected an exception to be thrown due to empty account group name.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception for empty account group name.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void setRuleWithAnyRuleIsMetPositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Discount', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter','Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Discount','Expected account group type to be "Discount".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'Any Rule Is Met','Expected account group rule type to be "Any Rule Is Met".');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void setRuleWithAllRulesAreMetPositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Discount', 
+            'Field Filter', 
+            'All Rules Are Met', 
+            ''
+        );
+
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter','Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Discount','Expected account group type to be "Discount".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'All Rules Are Met','Expected account group rule type to be "All Rules Are Met".');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void useAnyRuleIsMetAndTestRecordWhereAccountGroupTypeIsIncentivePositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Incentive', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter','Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Incentive', 'Expected account group type to be "Incentive".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'Any Rule Is Met','Expected account group rule type to be "Any Rule Is Met".');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void applyAlwaysAndVerifyRuleExecutesUnconditionallyPositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Discount', 
+            'Field Filter', 
+            'Always (No Criteria)', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter','Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Discount', 'Expected account group type to be "Discount".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'Always (No Criteria)','Expected account group rule type to be "Always (No Criteria)".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void defineCustomLogicWithAccountGroupTypeAsNonePositiveNew() {
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            '', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            'as, cm clc alk'
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1', 'Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Field Filter".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void useAnyRuleIsMetButRecordDoesntMeetAnyRulePositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Scheme', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1', 'Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Scheme', 'Expected account group type to be "Scheme".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'Any Rule Is Met', 'Expected account group rule type to be "Any Rule Is Met".');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void createAccountGroupWithTypeSchemeAndSaveSuccessfullyPositiveNew() {
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Scheme', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1', 'Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Scheme', 'Expected account group type to be "Scheme".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createAccountGroupWithInvalidOrRemovedPicklistValueNegativeNew(){
+        Test.startTest();
+        try {
+            dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+                'Account Group 1', 
+                'Price', 
+                'Field Filter', 
+                'None', 
+                ''
+            );
+            System.assert(false, 'Expected an exception to be thrown due to invalid account group type.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception for invalid account group type.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void createAccountGroupWithTypePriceAndValidateLinkedPricingLogicPositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Price', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1', 'Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Price', 'Expected account group type to be "Price".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void skipSelectionOfAccountGroupTypeWhenItsAlreadyInTheListPositiveNew() {
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 2', 
+            'Price', 
+            'Field Filter', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 2', 'Expected account group name to be "Account Group 2".');
+        System.assertEquals(accountGroup.dmpl__DynamicMemberType__c, 'Field Filter', 'Expected account group dynamic member type to be "Field Filter".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Price', 'Expected account group type to be "Price".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void accountGroupCreationWithTriggerValidationErrorWhenRulesAreViolatedWithInvalidValueNegativeNew() {
+        Test.startTest();
+        try {
+            dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+                'Account Group 1', 
+                'Price', 
+                '', 
+                'Invalid Rule Type', 
+                ''
+            );
+            System.assert(false, 'Expected an exception to be thrown due to invalid rule type.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception for invalid rule type.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void verifyCreatedRecordAppearsInAccountGroupListPositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 3', 
+            'Price', 
+            '', 
+            'Any Rule Is Met', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 3','Expected account group name to be "Account Group 3".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Price', 'Expected account group type to be "Price".');
+        System.assertEquals(accountGroup.dmpl__RuleSuccessCriteria__c, 'Any Rule Is Met','Expected account group rule type to be "Any Rule Is Met".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void accountGroupCreationWithLeaveRuleSuccessCriteriaPositiveNew() {
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 4', 
+            'Price', 
+            '', 
+            '', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 4', 'Expected account group name to be "Account Group 4".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Price','Expected account group type to be "Price".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void accountGroupCreationWithValidValueFromAccountGroupTypeDropdownPositiveNew() {
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            'Price', 
+            '', 
+            '', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        System.assertEquals(accountGroup.dmpl__AccountGroupType__c, 'Price','Expected account group type to be "Price".');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void accountGroupCreationWithAccountGroupTypeEmptyAndAttemptSavePositiveNew(){
+        Test.startTest();
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.createAccountGroup(
+            'Account Group 1', 
+            '', 
+            '', 
+            '', 
+            ''
+        );
+        System.assertNotEquals(accountGroup.Id, null, 'Expected account group to be created.');
+        accountGroup = AccountDataHelper.getAccountGroupById(accountGroup.Id);
+        System.assertEquals(accountGroup.Name, 'Account Group 1','Expected account group name to be "Account Group 1".');
+        Test.stopTest();    
+    }
+
+    @isTest
+    static void createWithValidFieldsPositiveNew() {
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup.Id,partner1.Id,'Test Batch Instance');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountGroupId__c, accountGroup.Id,'Expected account group member to be linked to the correct account group.');
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, partner1.Id,'Expected account group member to be linked to the correct partner account.');
+        System.assertEquals(accountGroupMember.dmpl__BatchInstanceId__c, 'Test Batch Instance','Expected account group member to have the correct batch instance ID.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveWithoutSelectingAccountPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup1.Id,null,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group member to be linked to the correct account group.');
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, null,'Expected account group member to be linked to the correct partner account.');
+        System.assertEquals(accountGroupMember.dmpl__BatchInstanceId__c, 'Batch Instance 1','Expected account group member to have the correct batch instance ID.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void saveWithoutSelectingAccountGroupNegativeNew() {
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        try {
+            dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(null,partner1.Id,'Batch Instance 1');
+            System.assert(false, 'Expected an exception to be thrown due to no account group.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to no account group.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void fillBatchInstanceIdInDecimal(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__AccountGroup__c accountGroup = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup.Id,partner1.Id,'1.1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__BatchInstanceId__c, '1.1','Expected account group member to have the correct batch instance ID.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void updateAccountGroupFromOneToAnotherGroupNegativeEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createAccountGroup3();
+        AccountMasterData.createAccountGroup2();
+        dmpl__AccountGroup__c accountGroup3 = AccountDataHelper.getAccountGroupByName('Account Group 3');
+        dmpl__AccountGroup__c accountGroup2 = AccountDataHelper.getAccountGroupByName('Account Group 2');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup3.Id,partner1.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountGroupId__c, accountGroup3.Id,'Expected account group member to be linked to the correct account group.');
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, partner1.Id,'Expected account group member to be linked to the correct partner account.');
+        System.assertEquals(accountGroupMember.dmpl__BatchInstanceId__c, 'Batch Instance 1','Expected account group member to have the correct batch instance ID.');
+        System.assert(true, 'Expected no exceptions to be thrown. Account group member cannot be updated to another account group as field is not writable.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void memberNameIsAutoGeneratedAndCannotBeModifiedNegativeEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup1.Id,partner1.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        System.assert(true, 'Expected no exceptions to be thrown Name cannot be modified.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void changeAccountWithValidAlternativeAndSavePositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createPartnerAccount3();
+        Account partner3 = TestDataHelpers.getPartnerAccount('Partner 3');
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup1.Id,partner1.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember.dmpl__AccountId__c = partner3.Id;
+        update accountGroupMember;
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, partner3.Id,'Expected account group member to be linked to the correct partner account.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void useInvalidFormatInMemberNameNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createAccountGroup3();
+        dmpl__AccountGroup__c accountGroup3 = AccountDataHelper.getAccountGroupByName('Account Group 3');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup3.Id,partner1.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        System.assert(true, 'Expected no exceptions to be thrown Name cannot be modified.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void validateThatAccountLookupShowsOnlyActiveAccounts(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createAccountGroup3();
+        dmpl__AccountGroup__c accountGroup3 = TestDataHelpers.getAccountGroup('Account Group 3');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup3.Id,partner1.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, partner1.Id,'Expected account group member to be linked to the correct partner account.');
+        System.assertEquals(accountGroupMember.dmpl__AccountGroupId__c, accountGroup3.Id,'Expected account group member to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void linkAnInactiveAccountGroupNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        try{
+            dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(null,partner1.Id,'Batch Instance 1');
+            System.assert(false, 'Expected an exception to be thrown due to no account.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to no account.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void memberRecordVisibleUnderRelatedListOfBothAccountAndGroup(){
+        AccountMasterData.createPartnerAccount4();
+        AccountMasterData.createAccountGroup3();
+        Account partner4 = TestDataHelpers.getPartnerAccount('Partner 4');
+        dmpl__AccountGroup__c accountGroup3 = TestDataHelpers.getAccountGroup('Account Group 3');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup3.Id,partner4.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        accountGroupMember = AccountDataHelper.getAccountGroupMemberById(accountGroupMember.Id);
+        System.assertEquals(accountGroupMember.dmpl__AccountId__c, partner4.Id,'Expected account group member to be linked to the correct partner account.');
+        System.assertEquals(accountGroupMember.dmpl__AccountGroupId__c, accountGroup3.Id,'Expected account group member to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void duplicateMemberNameUnderSameAccountGroupNegativeNew(){
+        AccountMasterData.createPartnerAccount4();
+        AccountMasterData.createAccountGroup3();
+        Account partner4 = TestDataHelpers.getPartnerAccount('Partner 4');
+        dmpl__AccountGroup__c accountGroup3 = TestDataHelpers.getAccountGroup('Account Group 3');
+        Test.startTest();
+        dmpl__AccountGroupMember__c accountGroupMember = AccountDataHelper.createAccountGroupMember(accountGroup3.Id,partner4.Id,'Batch Instance 1');
+        System.assertNotEquals(accountGroupMember.Id, null, 'Expected account group member to be created.');
+        System.assert(true, 'Expected no exceptions to be thrown Name cannot be modified and duplicate account group member name cannot be created.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRuleWithValidSequenceNumberAndAccountGroupPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            ''
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRuleWithoutSpecifyingFeildNameInFilterConditionPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveWithoutAccountGroupLinkedNegativeNew(){ 
+        Test.startTest();
+        try{
+            dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+                null,
+                1,
+                '',
+                '',
+                ''
+            );
+            System.assert(false, 'Expected an exception to be thrown due to no account group.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to no account group.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void changeOperationFromEqualsToIncludesAndVerifySavePositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule.dmpl__Operation__c = 'includes';
+        update accountGroupRule;
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__Operation__c, 'includes','Expected account group rule to have the correct operation.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void updateFieldValueToCorrectBusinessSegmentPositiveEdit(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            'ABC',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule.dmpl__FieldValue__c = 'Segment 1';
+        update accountGroupRule;
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__FieldValue__c, 'Segment 1','Expected account group rule to have the correct field value.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void changeOperationFromEqualsToIncludesPositiveEdit(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule.dmpl__Operation__c = 'includes';
+        update accountGroupRule;
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__Operation__c, 'includes','Expected account group rule to have the correct operation.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void leaveFieldNameBlankAndSavePositiveEdit(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            'Not blank',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule.dmpl__FieldName__c = '';
+        update accountGroupRule;
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.SequenceNumber__c, 1, 'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.AccountGroupId__c, accountGroup1.Id, 'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void assignDuplicateSequenceNumberWithTheSameAccountGroupPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            ''
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        dmpl__AccountGroupRule__c accountGroupRule2 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            ''
+        );
+        System.assertNotEquals(accountGroupRule2.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule2 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule2.Id);
+        System.assertEquals(accountGroupRule2.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule2.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void allAuditFieldsAreAutoPopulatedCorrectlyPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__Operation__c, 'equals','Expected account group rule to have the correct operation.');
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        System.assertNotEquals(accountGroupRule.CreatedById, null, 'Expected account group rule to have the correct created by.');
+        System.assertNotEquals(accountGroupRule.LastModifiedById, null, 'Expected account group rule to have the correct last modified by.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void enterUnsupportedOperationNegativeNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        try{
+            dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+                accountGroup1.Id,
+                1,
+                '',
+                '',
+                'Not Supported'
+            );
+            System.assert(false, 'Expected an exception to be thrown due to unsupported operation.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to unsupported operation.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void fieldValueDoNotMatchAnyCriteriaNegativeNew(){
+        Test.startTest();
+        try{
+            dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+                null,
+                1,
+                'ABC',
+                '',
+                'Equals'
+            );
+            System.assert(false, 'Expected an exception to be thrown due to field value not matching any criteria.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to field value not matching any criteria.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void addMultipleRulesWithDecimalSequenceNumbersPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1.5,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1.5,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        dmpl__AccountGroupRule__c accountGroupRule2 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            2.5,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule2.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule2 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule2.Id);
+        System.assertEquals(accountGroupRule2.dmpl__SequenceNumber__c, 2.5,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule2.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void addMultipleRulesWithUniqueSequenceNumbersPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        dmpl__AccountGroupRule__c accountGroupRule2 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            2,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule2.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule2 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule2.Id);
+        System.assertEquals(accountGroupRule2.dmpl__SequenceNumber__c, 2,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule2.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        dmpl__AccountGroupRule__c accountGroupRule3 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            3,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule3.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule3 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule3.Id);
+        System.assertEquals(accountGroupRule3.dmpl__SequenceNumber__c, 3,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule3.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void duplicateSequenceNumberAllowedWithinSameAccountGroupPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        dmpl__AccountGroupRule__c accountGroupRule2 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule2.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule2 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule2.Id);
+        System.assertEquals(accountGroupRule2.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule2.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void duplicateOperationIsAllowedWithinSameAccountGroupPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        dmpl__AccountGroupRule__c accountGroupRule2 = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            '',
+            '',
+            'equals'
+        );
+        System.assertNotEquals(accountGroupRule2.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule2 = AccountDataHelper.getAccountGroupRuleById(accountGroupRule2.Id);
+        System.assertEquals(accountGroupRule2.dmpl__Operation__c, 'equals','Expected account group rule to have the correct operation.');
+        System.assertEquals(accountGroupRule2.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule2.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void rulesExecutedInCorrectOrderPositiveNew(){
+        dmpl__AccountGroup__c accountGroup1 = AccountDataHelper.getAccountGroupByName('Account Group 1');
+        Test.startTest();
+        dmpl__AccountGroupRule__c accountGroupRule = AccountDataHelper.createAccountGroupRule(
+            accountGroup1.Id,
+            1,
+            'dmpl__AccountContactId__c',
+            'escape',
+            'Equals'
+        );
+        System.assertNotEquals(accountGroupRule.Id, null, 'Expected account group rule to be created.');
+        accountGroupRule = AccountDataHelper.getAccountGroupRuleById(accountGroupRule.Id);
+        System.assertEquals(accountGroupRule.dmpl__SequenceNumber__c, 1,'Expected account group rule to have the correct sequence number.');
+        System.assertEquals(accountGroupRule.dmpl__AccountGroupId__c, accountGroup1.Id,'Expected account group rule to be linked to the correct account group.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithValidAccountAndGLAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            1000
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        accountBalance = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(accountBalance.dmpl__GLAccountId__c, glAccount1.Id,'Expected account balance to be linked to the correct GL account.');
+        System.assertEquals(accountBalance.dmpl__AccountId__c, customer1.Id,'Expected account balance to be linked to the correct account.');
+        System.assertEquals(accountBalance.dmpl__PartnerAccountId__c, partner1.Id,'Expected account balance to be linked to the correct partner account.');
+        System.assertEquals(accountBalance.dmpl__Amount__c, 1000,'Expected account balance to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveGLAccountWithoutSelectingAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            null
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        accountBalance = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(accountBalance.dmpl__GLAccountId__c, glAccount1.Id,'Expected account balance to be linked to the correct GL account.');
+        System.assertEquals(accountBalance.dmpl__AccountId__c, customer1.Id,'Expected account balance to be linked to the correct account.');
+        System.assertEquals(accountBalance.dmpl__PartnerAccountId__c, partner1.Id,'Expected account balance to be linked to the correct partner account.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveWithoutSelectingGLAccountNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        Test.startTest();
+        try{
+            dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+                customer1.Id,
+                null,
+                partner1.Id,
+                1000
+            );
+            System.assert(false, 'Expected an exception to be thrown due to no GL account.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to no GL account.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void nameIsAutoGeneratedSuccessfullyPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            1000
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        accountBalance = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertNotEquals(accountBalance.Name, null, 'Expected account balance to have a name.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void changeAccountFieldAndVerifyPositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        AccountMasterData.createCustomerAccount3();
+        Account customer3 = TestDataHelpers.getCustomerAccount('Customer 3');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            1000
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        accountBalance.dmpl__AccountId__c = customer3.Id;
+        update accountBalance;
+        accountBalance = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(accountBalance.dmpl__AccountId__c, customer3.Id,'Expected account balance to be linked to the correct account.');
+        System.assertEquals(accountBalance.dmpl__GLAccountId__c, glAccount1.Id,'Expected account balance to be linked to the correct GL account.');
+        System.assertEquals(accountBalance.dmpl__PartnerAccountId__c, partner1.Id,'Expected account balance to be linked to the correct partner account.');
+        System.assertEquals(accountBalance.dmpl__Amount__c, 1000,'Expected account balance to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void saveWithoutFillingMandatoryFieldsNegativeNew(){
+        Test.startTest();
+        try{
+            dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+                null,
+                null,
+                null,
+                null
+            );
+            System.assert(false, 'Expected an exception to be thrown due to no account balance.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to no account balance.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void validateProperDisplayOfAmountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            1000
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        accountBalance = AccountDataHelper.getAccountBalanceById(accountBalance.Id);
+        System.assertEquals(accountBalance.dmpl__GLAccountId__c, glAccount1.Id,'Expected account balance to be linked to the correct GL account.');
+        System.assertEquals(accountBalance.dmpl__AccountId__c, customer1.Id,'Expected account balance to be linked to the correct account.');
+        System.assertEquals(accountBalance.dmpl__PartnerAccountId__c, partner1.Id,'Expected account balance to be linked to the correct partner account.');
+        System.assertEquals(accountBalance.dmpl__Amount__c, 1000,'Expected account balance to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createdRecordAppearsCorrectlyInRelatedListOfAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__GLAccount__c glAccount1 = AccountDataHelper.getGLAccountByName('ICICI Bank');
+        Test.startTest();
+        dmpl__AccountBalance__c accountBalance = AccountDataHelper.createAccountBalance(
+            customer1.Id,
+            glAccount1.Id,
+            partner1.Id,
+            1000
+        );
+        System.assertNotEquals(accountBalance.Id, null, 'Expected account balance to be created.');
+        Account retrievedAccount = AccountDataHelper.getAccountById(customer1.Id);
+        System.assertEquals(retrievedAccount.Id, accountBalance.dmpl__AccountId__c, 'Expected account balance to be linked to the correct account.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void createAccountLocationWithValidAccountNameChannelLocationTypePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void setBothCheckboxesAllowInventoryAndIsActiveAsTruePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            true,
+            true,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, true, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void enterValidGeolocationForALocationPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void validateTheUserIsAValidUserDuringAccountLocationCreationPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.CreatedById, UserInfo.getUserId(), 'Expected account location to be created by the current user.');
+        System.assertEquals(accountLocation.LastModifiedById, UserInfo.getUserId(), 'Expected account location to be modified by the current user.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void setChannelPicklistToAnAllowedValuePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void setLocationTypePicklistToAValidTypePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void accountLocationCreationWithMinimalRequiredFieldsPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            null,
+            null,
+            true,
+            true,
+            null,
+            null
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void accountLocationCreationWithSpecialCharactersInNamePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune?!@',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            true,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.Name, 'Pune?!@', 'Expected account location to have the correct name.');
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void verifyCreatedByAndLastModifiedByFieldsArePopulatedPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.CreatedById, UserInfo.getUserId(), 'Expected account location to be created by the current user.');
+        System.assertEquals(accountLocation.LastModifiedById, UserInfo.getUserId(), 'Expected account location to be modified by the current user.');
+        Test.stopTest();  
+    }
+
+    @isTest 
+    static void allowInventoryCheckboxLeftUncheckedPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            true,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void onlyIsActiveIsTrueAllowInventoryIsFalsePositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            true,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithoutSelectingRequiredAccountPositiveNew(){
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            null,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(accountLocation.dmpl__AccountId__c, null, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__Channel__c, 'Sample', 'Expected account location to have the correct channel.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void leaveNameBlankPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            '',
+            partner1.Id,
+            '',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertNotEquals(accountLocation.Name, null, 'Expected account location to get autopopulated.');
+        System.assertEquals(accountLocation.dmpl__AccountId__c, partner1.Id, 'Expected account location to be linked to the correct account.');
+        System.assertEquals(accountLocation.dmpl__LocationType__c, 'Sample', 'Expected account location to have the correct location type.');
+        System.assertEquals(accountLocation.dmpl__IsActive__c, true, 'Expected account location to have the correct active status.');
+        System.assertEquals(accountLocation.dmpl__AllowInventory__c, false, 'Expected account location to have the correct allow inventory status.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Latitude__s, 10, 'Expected account location to have the correct latitude.');
+        System.assertEquals(accountLocation.dmpl__GeoLocation__Longitude__s, 20, 'Expected account location to have the correct longitude.');        
+        Test.stopTest();
+    }
+
+    @isTest
+    static void enterInvalidValueInGeolocationFieldNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        try{
+            dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+                'Pune',
+                partner1.Id,
+                'Sample',
+                'Sample',
+                false,
+                false,
+                1000,
+                -10000
+            );
+            System.assert(false, 'Expected an exception to be thrown due to invalid geolocation value.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to invalid geolocation value.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void updateChannelPicklistValueToAnotherValidOptionPositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation.dmpl__Channel__c = null;
+        update accountLocation;
+        dmpl__AccountLocations__c updatedAccountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(updatedAccountLocation.dmpl__Channel__c, null, 'Expected account location to have the correct channel.'); 
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void changeAllowInventoryFromFalseToTruePositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation.dmpl__AllowInventory__c = true;
+        update accountLocation;
+        dmpl__AccountLocations__c updatedAccountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(updatedAccountLocation.dmpl__AllowInventory__c, true, 'Expected account location to have the correct allow inventory status.'); 
+        Test.stopTest();
+    }
+
+    @isTest
+    static void clearTheAccountFieldPositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation.dmpl__AccountId__c = null;
+        update accountLocation;
+        dmpl__AccountLocations__c updatedAccountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(updatedAccountLocation.dmpl__AccountId__c, null, 'Expected account location to have the correct account.'); 
+        Test.stopTest();
+    }
+
+    @isTest
+    static void setLocationTypeToNonePositiveEdit(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Test.startTest();
+        dmpl__AccountLocations__c accountLocation = AccountDataHelper.createAccountLocation(
+            'Pune',
+            partner1.Id,
+            'Sample',
+            'Sample',
+            false,
+            false,
+            10,
+            20
+        );
+        System.assertNotEquals(accountLocation, null, 'Expected account location to be created.');
+        accountLocation.dmpl__LocationType__c = null;
+        update accountLocation;
+        dmpl__AccountLocations__c updatedAccountLocation = AccountDataHelper.getAccountLocationById(accountLocation.Id);
+        System.assertEquals(updatedAccountLocation.dmpl__LocationType__c, null, 'Expected account location to have the correct location type.'); 
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void createRecordWithValidBranchAndPartnerAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void nameIsPopulatedCorrectlyPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertNotEquals(accountUser.Name, null, 'Expected account user to have a name.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void useAllRequiredAndOptionalFieldsPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void userIndexedFieldsForFasterLookupPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithSameUserButDifferentPartnerAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createPartnerAccount2();
+        Account partner2 = TestDataHelpers.getPartnerAccount('Partner 2');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        dmpl__AccountUser__c accountUser2 = AccountDataHelper.createAccountUser(
+            partner2.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser2, null, 'Expected account user to be created.');
+        accountUser2 = AccountDataHelper.getAccountUserById(accountUser2.Id);
+        System.assertEquals(accountUser2.dmpl__PartnerAccountId__c, partner2.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser2.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser2.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser2.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser2.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void validateThatDateEffectiveFromAndDateEffectiveTillAreSavedCorrectlyPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithTodaysDateInDateEffectiveFromPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void userFutureDateEffectiveTillPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void leaveRequiredPartnerAccountBlankNegativeNew(){
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        try{
+            dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+                null, 
+                branch1.Id, 
+                UserInfo.getUserId(), 
+                Date.today(), 
+                Date.today().addDays(30)
+            );
+            System.assert(false, 'Expected an exception to be thrown due to empty mandatory fields.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to empty mandatory fields.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void setDateEffectiveTillEarlierThanDateEffectiveFromPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today().addDays(30), 
+            Date.today()
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today().addDays(30), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today(), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void saveWithoutSelectingUserNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            null, 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void saveWithSpecialCharactersInPartnerAccountNameNegativeNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        System.assert(true, 'Expected no exceptions to be thrown not possible to enter invalid names.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void usePastDateInDateEffectiveTillPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(-30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(-30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void setNonSubsequentBranchesForThePartnerAccountPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        AccountMasterData.createBranch2();
+        dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch2.Id, 
+            UserInfo.getUserId(), 
+            Date.today(),
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch2.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void enterInvalidLookupReferenceForBranchPositiveNew(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(),
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        System.assertEquals(accountUser.dmpl__PartnerAccountId__c, partner1.Id, 'Expected account user to be linked to the correct partner.');
+        System.assertEquals(accountUser.dmpl__BranchId__c, branch1.Id, 'Expected account user to be linked to the correct branch.');
+        System.assertEquals(accountUser.dmpl__UserId__c, UserInfo.getUserId(), 'Expected account user to be linked to the correct user.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveFrom__c, Date.today(), 'Expected account user to have the correct date effective from.');
+        System.assertEquals(accountUser.dmpl__DateEffectiveTill__c, Date.today().addDays(30), 'Expected account user to have the correct date effective till.');
+        System.assert(true, 'Expected no exceptions to be thrown not possible to enter invalid lookup reference.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void everytimeDifferentNameIsGeneratedInTheAccountUserList(){
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__AccountUser__c accountUser = AccountDataHelper.createAccountUser(
+            partner1.Id, 
+            branch1.Id, 
+            UserInfo.getUserId(), 
+            Date.today(), 
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountUser, null, 'Expected account user to be created.');
+        accountUser = AccountDataHelper.getAccountUserById(accountUser.Id);
+        dmpl__AccountUser__c accountUser2 = AccountDataHelper.createAccountUser(partner1.Id, branch1.Id, UserInfo.getUserId(), Date.today(), Date.today().addDays(30));
+        System.assertNotEquals(accountUser2, null, 'Expected account user to be created.');
+        accountUser2 = AccountDataHelper.getAccountUserById(accountUser2.Id);
+        System.assertNotEquals(accountUser.Name, accountUser2.Name, 'Expected account user to have different names.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createUsingTheMandatoryFieldsPositveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct account.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void ensureLookupRelationshipsDisplayCorrectRecordsPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithoutRequiredLookupsNegativeNew(){
+        Test.startTest();
+        try{
+            dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+                null,
+                null,
+                null,
+                null,
+                100,
+                Date.today()
+            );
+            System.assert(false, 'Expected an exception to be thrown due to empty mandatory fields.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to empty mandatory fields.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createRecordWithValidSchemeLedgerAndAccountPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void addValidDiscountVoucherLookupAndVerifyTheRecordIsSavedPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest 
+    static void provideDocumentDateAndAmountAndVerifyTheRecordIsSavedPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void enterMaximumAllowedValidIntegerInRewardPointsPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            2147483647,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 2147483647, 'Expected account reward ledger to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void leaveOptionalFieldsBlankAndVerifyTheRecordIsSavedPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        Test.startTest();
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            null,
+            null,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, null, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, null, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today(), 'Expected account reward ledger to have the correct document date.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void confirmThatCreatedByAndLastModifiedByArePopulatedPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.CreatedById, UserInfo.getUserId(), 'Expected account reward ledger to be created by the current user.');
+        System.assertEquals(accountRewardLedger.LastModifiedById, UserInfo.getUserId(), 'Expected account reward ledger to be modified by the current user.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void editRecordToUpdateRewardPointsPositiveEdit(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        accountRewardLedger.dmpl__RewardPoints__c = 200;
+        update accountRewardLedger;   
+        dmpl__AccountRewardLedger__c updatedAccountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(updatedAccountRewardLedger.dmpl__RewardPoints__c, 200, 'Expected account reward ledger to have the correct amount.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void changeSchemeLedgerToAnotherValidValuePositiveEdit(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__SchemeLedger__c schemeLedger2 = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        accountRewardLedger.dmpl__SchemeLedgerId__c = schemeLedger2.Id;
+        update accountRewardLedger;
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger2.Id, 'Expected account reward ledger to have the correct scheme ledger.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveWithoutSelectingAccountInAccountRewaredLedgerNegativeNew(){
+        Test.startTest();
+        try{
+            dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+                null,
+                null,
+                null,
+                null,
+                100,
+                Date.today()
+            );
+            System.assert(false, 'Expected an exception to be thrown due to empty mandatory fields.');
+        } catch (Exception e) {
+            System.assert(true, 'Expected exception due to empty mandatory fields.');
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void enterAnInvalidDiscountVoucherIdNegativeNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assert(true, 'Expected no exceptions to be thrown since not possible to select invalid voucher.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void inputAlphabeticalCharactersInDocumentDateNegativeNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assert(true, 'Expected no exceptions to be thrown since not possible to enter string on a integer field.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void saveWithFutureDocumentDatePositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today().addDays(30)
+        );
+        System.assertNotEquals(accountRewardLedger, null, 'Expected account reward ledger to be created.');
+        accountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(accountRewardLedger.dmpl__AccountId__c, partner1.Id, 'Expected account reward ledger to be linked to the correct partner.');
+        System.assertEquals(accountRewardLedger.dmpl__DiscountVoucherId__c, voucher.Id, 'Expected account reward ledger to be linked to the correct voucher.');
+        System.assertEquals(accountRewardLedger.dmpl__SchemeLedgerId__c, schemeLedger.Id, 'Expected account reward ledger to be linked to the correct scheme ledger.');
+        System.assertEquals(accountRewardLedger.dmpl__RewardPoints__c, 100, 'Expected account reward ledger to have the correct amount.');
+        System.assertEquals(accountRewardLedger.dmpl__DocumentDate__c, Date.today().addDays(30), 'Expected account reward ledger to have the correct document date.');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void removeExistingSchemeLedgerAndTrySavingTheRecordPositiveNew(){
+        Account partner1 = AccountDataHelper.getAccountByName('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        Test.startTest();
+        dmpl__DiscountVoucher__c voucher = DiscountDataHelper.createDiscountVoucher(
+            partner1.Id,
+            branch1.Id,
+            'Voucher',
+            100,
+            Date.today()
+        );
+        dmpl__SchemeLedger__c schemeLedger = SchemeDataHelper.createSchemeLedger(partner1.Id,branch1.Id);
+        dmpl__AccountRewardLedger__c accountRewardLedger = AccountDataHelper.createAccountRewardLedger(
+            partner1.Id,
+            voucher.Id,
+            schemeLedger.Id,
+            null,
+            100,
+            Date.today()
+        );
+        accountRewardLedger.dmpl__SchemeLedgerId__c = null;
+        update accountRewardLedger;
+        dmpl__AccountRewardLedger__c updatedAccountRewardLedger = AccountDataHelper.getAccountRewardLedgerById(accountRewardLedger.Id);
+        System.assertEquals(updatedAccountRewardLedger.dmpl__SchemeLedgerId__c, null, 'Expected account reward ledger to have the correct scheme ledger.');
+        Test.stopTest();
+    }
+}
