@@ -402,14 +402,34 @@ public class TestDataHelpers {
         );
     }
     public static dmpl__ItemAlternate__c getItemAlternate() {
-        return [SELECT Id, Name,
-                dmpl__ItemId__c,
-                dmpl__AlternateItemId__c,
-                dmpl__AlternateItemName__c,
-                dmpl__AlternateType__c,
-                dmpl__EffectiveFromDate__c FROM dmpl__ItemAlternate__c LIMIT 1];
+        return [SELECT Id, Name FROM dmpl__ItemAlternate__c LIMIT 1];
     }
  
+    public static dmpl__ItemLot__c createItemLot(
+        dmpl__Branch__c branch,
+        dmpl__Item__c item,
+        dmpl__SKU__c sku
+    ) {
+        return (dmpl__ItemLot__c) TestFactory.createSObject(
+            new dmpl__ItemLot__c(
+                dmpl__BranchId__c = branch.Id,
+                dmpl__PartnerAccountId__c = branch.dmpl__PartnerAccountId__c,
+                dmpl__ItemId__c = item.Id,
+                dmpl__SKUId__c = sku.Id,
+                dmpl__BatchNo__c = ' Test - Batch - Number ',
+                dmpl__SerialNumber__c = 'Test - Serial - Number ',
+                dmpl__SupplierInvoiceNumber__c = ' Test -Supplier -Invoice- Number ',
+                dmpl__DateOfReceipt__c = Date.today(),
+                dmpl__DateOfMfg__c = Date.today(),
+                dmpl__TotalCost__c = 100,
+                dmpl__DateOfSupplierInvoice__c = Date.today(),
+                dmpl__Cost__c = 100
+            ),
+            'ItemLotDefaults',
+            true
+        );
+    }
+
     public static dmpl__ItemLot__c createItemLot(
         dmpl__Branch__c branch,
         dmpl__Item__c item,
@@ -436,6 +456,7 @@ public class TestDataHelpers {
             true
         );
     }
+    
     public static dmpl__ItemLot__c getItemLot() {
         return [SELECT 
         Id, 
@@ -483,7 +504,7 @@ public class TestDataHelpers {
     }
 
     public static dmpl__ItemLotType__c getItemLotType(){
-        return [select id,name from dmpl__ItemLotType__c limit 1];
+        return [select Id,name from dmpl__ItemLotType__c limit 1];
     }
     
     public static dmpl__Resource__c createResource(
@@ -556,7 +577,8 @@ public class TestDataHelpers {
                 dmpl__SKUId__c,
                 dmpl__PriceListId__c,
                 dmpl__DateEffectiveTill__c,
-                dmpl__DateEffectiveFrom__c
+                dmpl__DateEffectiveFrom__c,
+                dmpl__Price__c
             FROM 
                 dmpl__PriceListRules__c 
             LIMIT 1];
@@ -656,7 +678,7 @@ public class TestDataHelpers {
         );
     }
     public static dmpl__StorageLocation__c getStorageLocation() {
-        return [SELECT Id, Name FROM dmpl__StorageLocation__c LIMIT 1];
+        return [SELECT Id, Name, dmpl__BranchId__c FROM dmpl__StorageLocation__c LIMIT 1];
     }
 
     public static dmpl__PartnerResource__c createPartnerResources(Account partnerAccount,dmpl__Branch__c branch,dmpl__Resource__c resource) {
@@ -796,7 +818,7 @@ public class TestDataHelpers {
     }
     public static dmpl__DiscountGroup__c getDiscountGroup(){
         return [SELECT 
-        id,
+        Id,
         name 
         FROM dmpl__DiscountGroup__c LIMIT 1];
     }
@@ -815,7 +837,7 @@ public class TestDataHelpers {
                 dmpl__IsSelected__c=true,
                 dmpl__IsQuantityEditable__c=True,
                 dmpl__ApplicableFor__c='Sale',
-                dmpl__PartnerAccountId__c = partnerAccount.id,
+                dmpl__PartnerAccountId__c = partnerAccount.Id,
                 dmpl__FeatureId__c = itemFeature.Id,
                 dmpl__SortOrder__c = 30),
             'ItemComponentDefaults',
@@ -838,7 +860,6 @@ public class TestDataHelpers {
         ];
     }
     
-    //new Partner Account 1
     /**
      * @description      Generates a Partner Account with specific field values passed as parameters
      * @return          `Account`
@@ -880,7 +901,6 @@ public class TestDataHelpers {
                 dmpl__ShippingPostalCode__c = shippingPostalCode,
                 Phone = phone
             ),
-            // 'PartnerAccountDefaults',
             true
         );
     }
@@ -954,7 +974,6 @@ public class TestDataHelpers {
                 Phone = phone,
                 dmpl__Status__c = status
             ),
-            //'CustomerAccountDefaults',
             true
         );
     }
@@ -1080,7 +1099,6 @@ public class TestDataHelpers {
         ];
     }
 
-    // created supplier account with all fields
     public static Account createSupplierAccount(
         String name,
         String billingStreet,
@@ -1243,6 +1261,7 @@ public class TestDataHelpers {
         String accountGroupName,
         String ruleSuccessCriteria,
         String accountGroupType
+
     ) {
         return (dmpl__AccountGroup__c) TestFactory.createSObject(
             new dmpl__AccountGroup__c(
@@ -1509,7 +1528,8 @@ public class TestDataHelpers {
                 dmpl__TaxGroupType__c,
                 dmpl__PartnerAccountId__c,
                 dmpl__BranchId__c,
-                dmpl__PartnerAccountGroupId__c
+                dmpl__PartnerAccountGroupId__c,
+                dmpl__Description__c
             FROM dmpl__TaxGroup__c
             WHERE Name = :name
             LIMIT 1
@@ -1646,7 +1666,6 @@ public class TestDataHelpers {
                 dmpl__IsDefault__c = isDefault,
                 dmpl__ItemId__c = item
             ),
-            //'SKUDefaults',
             true
         );
     }
@@ -1770,7 +1789,6 @@ public class TestDataHelpers {
                 dmpl__BranchId__c = branch != null ? branch.Id : null,
                 dmpl__LocationType__c = locationType != null ? locationType : null
             ),
-            //'StorageLocationDefaults',
             true
         );
     }
@@ -1783,7 +1801,7 @@ public class TestDataHelpers {
             LIMIT 1
         ];
     }
-    public static dmpl__ItemFeature__c createItemFeature(String Name, dmpl__item__c Item,String featureGroup){
+    public static dmpl__ItemFeature__c createItemFeature(String Name, dmpl__item__c Item, String featureGroup){
          List<dmpl__ItemFeature__c> itemFeature = new List<dmpl__ItemFeature__c>(); 
          itemFeature.add(new dmpl__ItemFeature__c(Name = Name,
                                                   dmpl__ItemId__c = Item.Id,
@@ -1909,6 +1927,22 @@ public class TestDataHelpers {
                 dmpl__Rate__c = taxRate
             ),
             'TaxSGSTDefaults',
+            true
+        );
+    }
+
+    public static dmpl__Tax__c createIGSTTax(
+        String name, 
+        Id taxGroupId, 
+        Decimal taxRate
+    ) {
+        return (dmpl__Tax__c) TestFactory.createSObject(
+            new dmpl__Tax__c(
+                Name = name,
+                dmpl__TaxGroupId__c = taxGroupId,
+                dmpl__Rate__c = taxRate
+            ),
+            'TaxIGSTDefaults',
             true
         );
     }
@@ -2044,21 +2078,6 @@ public class TestDataHelpers {
     }
 
     public static dmpl__SchemeCondition__c createSchemeCondition(
-        Id schemeId,
-        Id schemeLineId,
-        Id itemId
-    ) {
-        return (dmpl__SchemeCondition__c) TestFactory.createSObject(
-            new dmpl__SchemeCondition__c(
-                dmpl__SchemeId__c = schemeId,
-                dmpl__SchemeLineId__c = schemeLineId,
-                dmpl__ItemId__c = itemId
-            ),
-            'SchemeConditionDefaults',
-            true
-        );
-    }
-    public static dmpl__SchemeCondition__c createSchemeCondition(
         Id schemeLineId,
         Id schemeId,
         String conditionOperator,
@@ -2092,6 +2111,22 @@ public class TestDataHelpers {
         );
     }
 
+    public static dmpl__SchemeBenefit__c createSchemeBenefit(
+        Id schemeLineId, 
+        Id schemeId,
+        Id discontinuedItem
+    ) {
+        return (dmpl__SchemeBenefit__c) TestFactory.createSObject(
+            new dmpl__SchemeBenefit__c(
+                dmpl__SchemeLineId__c = schemeLineId,
+                dmpl__SchemeId__c = schemeId,
+                dmpl__DiscountedItemId__c = discontinuedItem
+            ),
+            'SchemeBenefitDefaults',
+            true
+        );
+    }
+
     public static dmpl__SchemeAccountBudget__c createSchemesAccountBudget(
         Id schemeId, 
         Id partnerAccountId
@@ -2102,6 +2137,60 @@ public class TestDataHelpers {
                 dmpl__PartnerAccountId__c = partnerAccountId
             ),
             'SchemeAccountBudgetDefaults',
+            true
+        );
+    }
+
+    public static dmpl__SchemeAccountBudget__c createSchemesAccountBudget(
+        Id schemeId
+    ) {
+        return (dmpl__SchemeAccountBudget__c) TestFactory.createSObject(
+            new dmpl__SchemeAccountBudget__c(
+                dmpl__SchemeId__c = schemeId
+            ),
+            'SchemeAccountBudgetDefaults',
+            true
+        );
+    }
+
+    public static dmpl__Scheme__c getScheme(String schemeName) {
+        return [
+            SELECT
+                Id,
+                Name,
+                dmpl__ValidFrom__c,
+                dmpl__ValidTo__c,
+                dmpl__BusinessHoursId__c,
+                dmpl__Status__c,
+                dmpl__SchemeType__c,
+                dmpl__Application__c,
+                dmpl__PeriodType__c,
+                dmpl__ValidCount__c,
+                dmpl__MultipleFulfilmentTreatment__c,
+                dmpl__SequenceNumber__c,
+                dmpl__IgnoreBudget__c,
+                dmpl__PartnerAccountId__c,
+                dmpl__PartnerAccountGroupId__c,
+                dmpl__AccountGroupId__c,
+                dmpl__AccountId__c,
+                dmpl__BranchId__c,
+                dmpl__ApplicableTransactionType__c
+            FROM dmpl__Scheme__c
+            WHERE Name = :schemeName
+            LIMIT 1
+        ];
+    }
+
+    public static dmpl__StorageLocation__c createStorageLocation(
+        String name,
+        Id branchId
+    ) {
+        return (dmpl__StorageLocation__c) TestFactory.createSObject(
+            new dmpl__StorageLocation__c(
+                Name = name,
+                dmpl__BranchId__c = branchId
+            ),
+            'StorageLocationDefaults',
             true
         );
     }

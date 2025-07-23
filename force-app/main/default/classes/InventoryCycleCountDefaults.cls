@@ -1,6 +1,5 @@
 @isTest
 public with sharing class InventoryCycleCountDefaults implements TestFactory.FieldDefaults {
-    
     public Map<String, Object> getFieldDefaults(){
         return new Map<String, Object>{ 
             'dmpl__PerformStartCounting__c' => false,

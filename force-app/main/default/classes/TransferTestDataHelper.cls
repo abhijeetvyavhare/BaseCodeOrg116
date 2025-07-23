@@ -14,7 +14,7 @@ public with sharing class TransferTestDataHelper {
             true
         );
     }
-
+    
     public static dmpl__Transfer__c createTransfer(Account partnerAccount,dmpl__Branch__c fromBranch,dmpl__Branch__c toBranch) {
         return (dmpl__Transfer__c) TestFactory.createSObject(
             new dmpl__Transfer__c(
@@ -28,7 +28,7 @@ public with sharing class TransferTestDataHelper {
             true
         );
     }
-
+    
     public static dmpl__Transfer__c getTransfer() {
         return [
             SELECT 
@@ -43,7 +43,7 @@ public with sharing class TransferTestDataHelper {
             LIMIT 1
         ];
     }
-
+    
     public static dmpl__Transfer__c getTransfer(dmpl__Transfer__c transfer) {
         return [
             SELECT 
@@ -59,71 +59,71 @@ public with sharing class TransferTestDataHelper {
             LIMIT 1
         ];
     }
-
+    
     public static dmpl__TransferInwardLine__c createTransferInwardLine(
         Id transferId,
         Id branchId,
         Id itemId,
-        Integer quantity) {
+        Integer quantity
+    ) {
         return (dmpl__TransferInwardLine__c) TestFactory.createSObject(
             new dmpl__TransferInwardLine__c(
                 dmpl__TransferId__c = transferId,
                 dmpl__BranchId__c = branchId,
                 dmpl__ItemId__c = itemId,
                 dmpl__Quantity__c = quantity
-                
             ),
             'TransferInwardLineDefaults',
             true
         );
     }
+    
     public static dmpl__TransferInwardLine__c createTransferInwardLine(
         Id transferId,
         Id outwardId,
         Id branchId,
         Id itemId,
-        Integer quantity) {
+        Integer quantity
+    ) {
         return (dmpl__TransferInwardLine__c) TestFactory.createSObject(
             new dmpl__TransferInwardLine__c(
                 dmpl__TransferId__c = transferId,
                 dmpl__TransferOutwardLineId__c = outwardId,
                 dmpl__BranchId__c = branchId,
                 dmpl__ItemId__c = itemId,
-                dmpl__Quantity__c = quantity
-                
+                dmpl__Quantity__c = quantity      
             ),
             'TransferInwardLineDefaults',
             true
         );
     }
-
+    
     public static dmpl__TransferInwardLine__c createTransferInwardLine(dmpl__TransferOutwardLine__c transferOutwardLine ,dmpl__Transfer__c transfer,dmpl__Branch__c branch) {
         return (dmpl__TransferInwardLine__c) TestFactory.createSObject(
             new dmpl__TransferInwardLine__c(
                 dmpl__TransferId__c = transfer.Id,
                 dmpl__TransferOutwardLineId__c = transferOutwardLine.Id,
                 dmpl__Quantity__c = 1,
-                dmpl__BranchId__c = branch.Id
-                
+                dmpl__BranchId__c = branch.Id         
             ),
             'TransferInwardLineDefaults',
             true
         );
     }
-
+    
     public static dmpl__TransferOutwardLine__c createTransferOutwardLine(dmpl__Transfer__c transfer,dmpl__Item__c item) {
         return (dmpl__TransferOutwardLine__c) TestFactory.createSObject(
             new dmpl__TransferOutwardLine__c(
-                dmpl__TransferId__c = transfer.Id,
-                dmpl__ItemId__c = item.Id,
-                dmpl__Quantity__c = 1,
+                dmpl__TransferId__c = transfer?.Id,
+                dmpl__ItemId__c = item?.Id,
+                dmpl__Quantity__c = 2,
                 dmpl__UnitCost__c = 10              
             ),
             'TransferOutwardLineDefaults',
             true
         );
     }
-
+    
     public static dmpl__TransferOutwardLine__c getTransferOutwardLine() {
         return [
             SELECT 
@@ -139,6 +139,7 @@ public with sharing class TransferTestDataHelper {
             LIMIT 1
         ];
     }
+    
     public static dmpl__TransferOutwardLine__c getTransferOutwardLine(Id recordId) {
         return [
             SELECT 
@@ -155,7 +156,7 @@ public with sharing class TransferTestDataHelper {
             LIMIT 1
         ];
     }
-
+    
     public static dmpl__TransferInwardLine__c getTransferInwardLine() {
         return [
             SELECT 
@@ -164,11 +165,10 @@ public with sharing class TransferTestDataHelper {
                 dmpl__TransferOutwardLineId__c,
                 dmpl__BranchId__c
             FROM dmpl__TransferInwardLine__c LIMIT 1
-        ];
-        
+        ];    
     }
 
-     public static dmpl__TransferInwardLine__c getTransferInwardLine(Id inwardId) {
+    public static dmpl__TransferInwardLine__c getTransferInwardLine(Id inwardId) {
         return [
             SELECT 
                 dmpl__TransferId__c,
@@ -179,32 +179,30 @@ public with sharing class TransferTestDataHelper {
             FROM dmpl__TransferInwardLine__c
             WHERE Id = :inwardId
             LIMIT 1
-        ];
-        
+        ];    
     }
-
+    
     public static dmpl__TransferLine__c createTransferLine(dmpl__Transfer__c transfer) {
         return (dmpl__TransferLine__c) TestFactory.createSObject(
             new dmpl__TransferLine__c(
                 dmpl__TransferId__c=transfer.Id,
                 dmpl__Quantity__c=1
-                
             ),
             'TransferLineDefaults',
             true
         );
     }
-
+    
     public static dmpl__TransferLine__c getTransferLine() {
         return [
             SELECT 
                 dmpl__TransferId__c,
                 dmpl__Quantity__c
-            FROM dmpl__TransferLine__c LIMIT 1
+            FROM dmpl__TransferLine__c 
+            LIMIT 1
         ];
-        
     }
-
+    
 	public static dmpl__TransferLine__c getTransferLine(Id id) {
         return [
             SELECT 
@@ -214,11 +212,12 @@ public with sharing class TransferTestDataHelper {
 				dmpl__TransferType__c,
 				dmpl__Quantity__c,
                 dmpl__TransferId__c
-            FROM dmpl__TransferLine__c WHERE id = :id LIMIT 1
+            FROM dmpl__TransferLine__c 
+            WHERE id = :id 
+            LIMIT 1
         ];
-        
     }
-
+    
 	public static dmpl__TransferOutwardLine__c createTransferOutwardLine(
 		Id transferId,
 		Id itemId,
@@ -237,6 +236,7 @@ public with sharing class TransferTestDataHelper {
             true
         );
     }
+    
     public static dmpl__TransferOutwardLine__c createTransferOutwardLine(
 		Id transferId,
 		Id itemId,
@@ -261,5 +261,4 @@ public with sharing class TransferTestDataHelper {
             true
         );
     }
-
 }

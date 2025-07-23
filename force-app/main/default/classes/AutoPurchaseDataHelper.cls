@@ -1,6 +1,5 @@
 @isTest
 public with sharing class AutoPurchaseDataHelper {
-
     public static dmpl__AutoPurchaseOrder__c createAutoPurchaseOrder(
         Account partnerAccount,
         Account supplierAccount,
@@ -77,13 +76,17 @@ public with sharing class AutoPurchaseDataHelper {
                 dmpl__AutoOrderType__c,
                 dmpl__Status__c,
                 dmpl__PerformOrderGeneration__c,
-                dmpl__IsOrderGenerated__c
+                dmpl__IsOrderGenerated__c,
+                dmpl__PartnerAccountId__c,
+                dmpl__BranchId__c
             FROM dmpl__AutoPurchaseOrder__c
             LIMIT 1
         ];
     }
 
-    public static dmpl__AutoPurchaseOrder__c getAutoPurchaseOrder(Id autoOrderId) {
+    public static dmpl__AutoPurchaseOrder__c getAutoPurchaseOrder(
+        Id autoOrderId
+    ) {
         return [
             SELECT 
                 Id,
@@ -92,7 +95,9 @@ public with sharing class AutoPurchaseDataHelper {
                 dmpl__AutoOrderType__c,
                 dmpl__Status__c,
                 dmpl__PerformOrderGeneration__c,
-                dmpl__IsOrderGenerated__c
+                dmpl__IsOrderGenerated__c,
+                dmpl__PartnerAccountId__c,
+                dmpl__BranchId__c
             FROM dmpl__AutoPurchaseOrder__c
             WHERE Id = :autoOrderId
             LIMIT 1
@@ -136,6 +141,22 @@ public with sharing class AutoPurchaseDataHelper {
             true
         );
     }
+    
+    public static dmpl__AutoPurchaseOrderLine__c createAutoPurchaseOrderLine(
+        dmpl__AutoPurchaseOrder__c autoPurchaseOrder,
+        dmpl__Item__c item,
+        Integer quantity
+    ) {
+        return (dmpl__AutoPurchaseOrderLine__c) TestFactory.createSObject(
+            new dmpl__AutoPurchaseOrderLine__c(
+                dmpl__AutoPurchaseOrderId__c = autoPurchaseOrder != null ? autoPurchaseOrder.Id : null,
+                dmpl__ItemId__c = item != null ? item.Id : null,
+                dmpl__Quantity__c = quantity
+            ),
+            'AutoPurchaseOrderLineDefaults',
+            true
+        );
+    }
 
     public static dmpl__AutoPurchaseOrderLine__c updateAutoPurchaseOrderLine(
         dmpl__AutoPurchaseOrderLine__c existingLine,
@@ -168,7 +189,9 @@ public with sharing class AutoPurchaseDataHelper {
         ];
     }
 
-    public static dmpl__AutoPurchaseOrderLine__c getAutoPurchaseOrderLine(Id lineId) {
+    public static dmpl__AutoPurchaseOrderLine__c getAutoPurchaseOrderLine(
+        Id lineId
+    ) {
         return [
             SELECT 
                 Id,
@@ -204,7 +227,20 @@ public with sharing class AutoPurchaseDataHelper {
             true
         );
     }
-
+    
+    public static dmpl__AutoPurchaseOrderLineRelation__c createAutoPurchaseOrderLineRelation(
+        dmpl__AutoPurchaseOrder__c autoPurchaseOrder,
+        dmpl__AutoPurchaseOrderLine__c autoPurchaseOrderLine
+    ) {
+        return (dmpl__AutoPurchaseOrderLineRelation__c) TestFactory.createSObject(
+            new dmpl__AutoPurchaseOrderLineRelation__c(
+                dmpl__AutoPurchaseOrderId__c = autoPurchaseOrder.Id,
+                dmpl__AutoPurchaseOrderLineId__c = autoPurchaseOrderLine.Id
+            ),
+            'AutoPurchaseOrderLineRelationDefault', 
+            true
+        );
+    }
 
     public static dmpl__AutoPurchaseOrderLineRelation__c createAutoPurchaseOrderLineRelation(
         dmpl__AutoPurchaseOrder__c autoPurchaseOrder,
@@ -222,6 +258,26 @@ public with sharing class AutoPurchaseDataHelper {
                 dmpl__ItemId__c = item != null ? item.Id : null,
                 dmpl__ItemLotTypeId__c = itemLot != null ? itemLot.Id : null,
                 dmpl__SKUId__c = sku != null ? sku.Id : null,
+                dmpl__OrderQuantity__c = quantity,
+                dmpl__UnitCost__c = unitCost
+            ),
+            'AutoPurchaseOrderLineRelationDefault', 
+            true
+        );
+    }
+    
+    public static dmpl__AutoPurchaseOrderLineRelation__c createAutoPurchaseOrderLineRelation(
+        dmpl__AutoPurchaseOrder__c autoPurchaseOrder,
+        dmpl__AutoPurchaseOrderLine__c autoPurchaseOrderLine,
+        dmpl__Item__c item,
+        Integer quantity,
+        Decimal unitCost
+    ) {
+        return (dmpl__AutoPurchaseOrderLineRelation__c) TestFactory.createSObject(
+            new dmpl__AutoPurchaseOrderLineRelation__c(
+                dmpl__AutoPurchaseOrderId__c = autoPurchaseOrder != null ? autoPurchaseOrder.Id : null,
+                dmpl__AutoPurchaseOrderLineId__c = autoPurchaseOrderLine != null ? autoPurchaseOrderLine.Id : null,
+                dmpl__ItemId__c = item != null ? item.Id : null,
                 dmpl__OrderQuantity__c = quantity,
                 dmpl__UnitCost__c = unitCost
             ),
@@ -248,7 +304,9 @@ public with sharing class AutoPurchaseDataHelper {
         ];
     }
 
-    public static dmpl__AutoPurchaseOrderLineRelation__c getAutoPurchaseOrderLineRelation(Id recordId) {
+    public static dmpl__AutoPurchaseOrderLineRelation__c getAutoPurchaseOrderLineRelation(
+        Id recordId
+    ) {
         return [
             SELECT 
                 Id,

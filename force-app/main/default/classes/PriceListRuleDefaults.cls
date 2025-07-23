@@ -7,8 +7,8 @@ public with sharing class PriceListRuleDefaults implements TestFactory.FieldDefa
             'dmpl__ItemLotTypeId__c' => null,
             'dmpl__SKUId__c' => null,
             'dmpl__Price__c' => 1500,
-            'dmpl__DateEffectiveFrom__c' => Date.today(),
-            'dmpl__DateEffectiveTill__c' => Date.today().addMonths(1)
+            'dmpl__DateEffectiveFrom__c' => System.today().addDays(-1),
+            'dmpl__DateEffectiveTill__c' => System.today().addDays(9)
         };
     }
 }

@@ -6,4 +6,4 @@ public with sharing class TransferOutwardLineDefaults implements TestFactory.Fie
             'dmpl__UnitCost__c' => 10
         };
     }
-}
+}   

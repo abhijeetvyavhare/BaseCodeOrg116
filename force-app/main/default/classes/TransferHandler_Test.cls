@@ -4,7 +4,7 @@ public with sharing class TransferHandler_Test {
     static void createRequiredData() {
         Account partnerAccount = TestDataHelpers.createPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.createBranch(partnerAccount);
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount,branch);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount, branch);
     }
  
     @isTest
@@ -56,7 +56,7 @@ public with sharing class TransferHandler_Test {
     static void createATransferRecordWithAllMandatoryFields() {
         Account partnerAccount = TestDataHelpers.getPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount,branch);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount, branch);
        
         System.assertNotEquals(null, transfer, 'Transfer record should be fetched successfully');
         System.assertEquals(partnerAccount.Id, transfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
@@ -67,7 +67,7 @@ public with sharing class TransferHandler_Test {
     static void createTransferWithValidPartnerAccountPositive() {
         Account partnerAccount = TestDataHelpers.getPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount,branch);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount, branch);
       
         System.assertNotEquals(null, transfer, 'Transfer record should be fetched successfully');
         System.assertEquals(partnerAccount.Id, transfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
@@ -79,9 +79,9 @@ public with sharing class TransferHandler_Test {
         Test.startTest();
         Account partnerAccount = TestDataHelpers.getPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
-        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095','9876543210');
+        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095', '9876543210');
         dmpl__Branch__c branch1=TestDataHelpers.createBranch('Branch 1', partnerAccount1.Id, true, true, false, true);
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount,branch);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount, branch);
         transfer.dmpl__ToBranchId__c=branch1.Id;
         update transfer;
         dmpl__Transfer__c fetchedtransfer = TransferTestDataHelper.getTransfer(transfer);
@@ -95,11 +95,11 @@ public with sharing class TransferHandler_Test {
     Static void createTransferWithInvalidPartnerAccountNegative(){
         Boolean exceptionThrown= false;
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
-        Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2', false, true, false, true, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038','91-99665544433');
+        Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2', false, true, false, true, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038', '91-99665544433');
         Account account = TestDataHelpers.getPartnerAccount('Partner 2');
 
         try {
-             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,branch);
+             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, branch);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());
@@ -110,13 +110,13 @@ public with sharing class TransferHandler_Test {
     @isTest
     Static void createTransferWithInactiveFromBranchNegative(){
         Boolean exceptionThrown= false;
-        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095','9876543210');
+        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095', '9876543210');
         dmpl__Branch__c branch3 = TestDataHelpers.createBranch('Branch 3', partnerAccount1.Id, false, true, true, false);
         dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 3');
         Account account = TestDataHelpers.getPartnerAccount();
 
         try {
-             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,branch);
+             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, branch);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());
@@ -131,7 +131,7 @@ public with sharing class TransferHandler_Test {
         Account account = TestDataHelpers.getPartnerAccount();
 
         try {
-             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,null);
+             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, null);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());
@@ -144,7 +144,7 @@ public with sharing class TransferHandler_Test {
          Boolean exceptionThrown= false;
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
         Account account = TestDataHelpers.getPartnerAccount();
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,branch);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, branch);
       
         try {
             transfer.dmpl__PartnerAccountId__c=null;
@@ -162,14 +162,14 @@ public with sharing class TransferHandler_Test {
     static void updateTransferAddDateTimePositive(){
         Account partnerAccount = TestDataHelpers.getPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.getBranch();
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount,branch,null);
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partnerAccount, branch, null);
         transfer.dmpl__TransferTime__c= Date.Today();
         update transfer;
         dmpl__Transfer__c fetchedtransfer = TransferTestDataHelper.getTransfer(transfer);
         System.assertNotEquals(null, fetchedTransfer, 'Transfer record should be fetched successfully');
         System.assertEquals(partnerAccount.Id, fetchedTransfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
         System.assertEquals(branch.Id, fetchedTransfer.dmpl__BranchId__c, 'Branch should match');
-        System.assertEquals(Date.Today(),fetchedTransfer.dmpl__TransferTime__c,'Error');
+        System.assertEquals(Date.Today(), fetchedTransfer.dmpl__TransferTime__c, 'Error');
     }
 
     @isTest
@@ -178,7 +178,7 @@ public with sharing class TransferHandler_Test {
         Account account = TestDataHelpers.getPartnerAccount();
         
         try {
-           dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,null);
+           dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, null);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());
@@ -190,14 +190,14 @@ public with sharing class TransferHandler_Test {
     @isTest
     static void createTransferWithInvalidBranchAndValidPartnerAccountNegative(){
         Boolean exceptionThrown= false;
-        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095','9876543210');
+        Account partnerAccount1 = TestDataHelpers.createPartnerAccount('Partner 1', false, true, false, true, 'MG Road', 'Bengaluru', 'Karnataka', 'India', '560001', '56 Industrial Layout', 'Bengaluru', 'Karnataka', 'India', '560095', '9876543210');
         dmpl__Branch__c branch3 = TestDataHelpers.createBranch('Branch 3', partnerAccount1.Id, false, true, true, false);
         dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 3');
-        Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2', false, true, false, true, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038','91-99665544433');
+        Account partnerAccount2 = TestDataHelpers.createPartnerAccount('Partner 2', false, true, false, true, '45 Residency Road', 'Pune', 'Maharashtra', 'India', '411001', '22 Commerce Avenue', 'Pune', 'Maharashtra', 'India', '411038', '91-99665544433');
         Account account = TestDataHelpers.getPartnerAccount('Partner 2');
 
         try {
-             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account,branch);
+             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(account, branch);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());
@@ -212,7 +212,7 @@ public with sharing class TransferHandler_Test {
         Account account = TestDataHelpers.getPartnerAccount();
 
         try {
-             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(null,branch);
+             dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(null, branch);
         } catch (Exception e) {
            exceptionThrown= true;
        System.debug('Expected exception caught: ' + e.getMessage());

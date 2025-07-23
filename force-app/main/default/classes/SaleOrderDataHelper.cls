@@ -50,6 +50,24 @@ public with sharing class SaleOrderDataHelper {
         );
     }
 
+      public static dmpl__SaleOrder__c createSaleOrder(
+        Id customerAccountId,
+        Id partnerAccountId, 
+        Id branchId,
+        Boolean skipScheme
+    ) {
+        return (dmpl__SaleOrder__c) TestFactory.createSObject(
+            new dmpl__SaleOrder__c(
+                dmpl__PartnerAccountId__c = partnerAccountId,
+                dmpl__BranchId__c = branchId,
+                dmpl__AccountId__c = customerAccountId,
+                dmpl__SkipScheme__c = skipScheme
+            ),
+            'SaleOrderDefaults',
+            true
+        );
+    }
+
     public static dmpl__SaleOrder__c getSaleOrder() {
         return [
             SELECT Id, 
@@ -165,7 +183,12 @@ public with sharing class SaleOrderDataHelper {
     }
 
     public static dmpl__SKU__c getSKU(Id itemId) {
-        return [SELECT Id, Name,dmpl__ItemId__c,dmpl__IsDefault__c FROM dmpl__SKU__c LIMIT 1];
+        return [SELECT 
+                    Id,
+                    Name,
+                    dmpl__ItemId__c,
+                    dmpl__IsDefault__c
+                 FROM dmpl__SKU__c LIMIT 1];
     }
  
 
@@ -320,9 +343,9 @@ public with sharing class SaleOrderDataHelper {
     return (dmpl__SaleOrderLine__c) TestFactory.createSObject(
         new dmpl__SaleOrderLine__c(
             dmpl__SaleOrderId__c = saleOrderId != null ? saleOrderId : null,
-            dmpl__ItemId__c      = itemId != null ? itemId : null,
-            dmpl__Quantity__c    = quantity,
-            dmpl__SKUId__c       = skuId != null ? skuId : null
+            dmpl__ItemId__c = itemId != null ? itemId : null,
+            dmpl__Quantity__c = quantity,
+            dmpl__SKUId__c = skuId != null ? skuId : null
         ),
         true
     );

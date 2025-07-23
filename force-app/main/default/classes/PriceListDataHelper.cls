@@ -1,9 +1,11 @@
 @isTest
 public with sharing class PriceListDataHelper {
-    public static dmpl__PriceList__c createPriceList(Account partnerAccount, dmpl__Branch__c branch) {
+    public static dmpl__PriceList__c createPriceList(
+        Account partnerAccount, 
+        dmpl__Branch__c branch
+    ) {
         return (dmpl__PriceList__c) TestFactory.createSObject(
             new dmpl__PriceList__c(
-                Name = 'Test-Price',
                 dmpl__PartnerAccountId__c = partnerAccount.Id,
                 dmpl__BranchId__c = branch.Id,
                 dmpl__PriceListType__c = 'Sale Price',
@@ -18,12 +20,12 @@ public with sharing class PriceListDataHelper {
         );
     }
 
-
     public static dmpl__PriceList__c createPriceList(
         String name, 
         Boolean isActive,
         Id partnerAccountId,
-        Id branchId) {
+        Id branchId
+    ) {
         return (dmpl__PriceList__c) TestFactory.createSObject(
             new dmpl__PriceList__c(
                 Name = name,
@@ -41,8 +43,8 @@ public with sharing class PriceListDataHelper {
     }
 
     public static dmpl__PriceListRules__c createPriceListRule(
-        dmpl__PriceList__c priceList,
-        dmpl__Item__c item,
+        dmpl__PriceList__c priceList, 
+        dmpl__Item__c item, 
         dmpl__SKU__c sku
     ) {
         return (dmpl__PriceListRules__c) TestFactory.createSObject(
@@ -58,7 +60,6 @@ public with sharing class PriceListDataHelper {
             true
         );
     }
-
 
     public static dmpl__PriceListRules__c createPriceListRule(
         Id priceListId,
@@ -81,7 +82,8 @@ public with sharing class PriceListDataHelper {
     }
 
     public static dmpl__PriceList__c getPriceList() {
-        return [SELECT 
+        return [
+            SELECT 
                 Id, 
                 Name,
                 dmpl__PartnerAccountId__c,
@@ -93,12 +95,16 @@ public with sharing class PriceListDataHelper {
                 dmpl__PartnerAccountGroupId__c,
                 dmpl__ExternalId__c,
                 dmpl__SequenceNumber__c
-                FROM dmpl__PriceList__c 
-                LIMIT 1];
+            FROM dmpl__PriceList__c 
+            LIMIT 1
+        ];
     }
 
-    public static dmpl__PriceList__c getPriceList(Id priceListId) {
-        return [SELECT 
+    public static dmpl__PriceList__c getPriceList(
+        Id priceListId
+    ) {
+        return [
+            SELECT 
                 Id, 
                 Name,
                 dmpl__PartnerAccountId__c,
@@ -110,14 +116,17 @@ public with sharing class PriceListDataHelper {
                 dmpl__PartnerAccountGroupId__c,
                 dmpl__ExternalId__c,
                 dmpl__SequenceNumber__c
-                FROM dmpl__PriceList__c 
-                WHERE Id = :priceListId 
-                LIMIT 1];
+            FROM dmpl__PriceList__c 
+            WHERE Id = :priceListId 
+            LIMIT 1
+        ];
     }
 
-
-    public static dmpl__PriceList__c getPriceList(String name) {
-        return [SELECT 
+    public static dmpl__PriceList__c getPriceList(
+        String name
+    ) {
+        return [
+            SELECT 
                 Id, 
                 Name,
                 dmpl__PartnerAccountId__c,
@@ -129,26 +138,41 @@ public with sharing class PriceListDataHelper {
                 dmpl__PartnerAccountGroupId__c,
                 dmpl__ExternalId__c,
                 dmpl__SequenceNumber__c
-                FROM dmpl__PriceList__c 
-                WHERE Name = :name 
-                LIMIT 1];
+            FROM dmpl__PriceList__c 
+            WHERE Name = :name 
+            LIMIT 1
+        ];
     }
     
     public static dmpl__PriceListRules__c getPriceListRule() {
         return [
-            SELECT Id, dmpl__PriceListId__c, dmpl__ItemId__c, dmpl__SKUId__c,
-                dmpl__DateEffectiveFrom__c, dmpl__DateEffectiveTill__c,
-                dmpl__Price__c, dmpl__Price2__c
+            SELECT 
+                Id,
+                dmpl__PriceListId__c,
+                dmpl__ItemId__c,
+                dmpl__SKUId__c,
+                dmpl__DateEffectiveFrom__c,
+                dmpl__DateEffectiveTill__c,
+                dmpl__Price__c, 
+                dmpl__Price2__c
             FROM dmpl__PriceListRules__c
             LIMIT 1
         ];
     }
 
-    public static dmpl__PriceListRules__c getPriceListRule(Id priceListRuleId) {
+    public static dmpl__PriceListRules__c getPriceListRule(
+        Id priceListRuleId
+    ) {
         return [
-            SELECT Id, dmpl__PriceListId__c, dmpl__ItemId__c, dmpl__SKUId__c,
-                dmpl__DateEffectiveFrom__c, dmpl__DateEffectiveTill__c,
-                dmpl__Price__c, dmpl__Price2__c
+            SELECT 
+                Id, 
+                dmpl__PriceListId__c, 
+                dmpl__ItemId__c, 
+                dmpl__SKUId__c,
+                dmpl__DateEffectiveFrom__c, 
+                dmpl__DateEffectiveTill__c,
+                dmpl__Price__c, 
+                dmpl__Price2__c
             FROM dmpl__PriceListRules__c
             WHERE Id = :priceListRuleId
             LIMIT 1
@@ -156,10 +180,12 @@ public with sharing class PriceListDataHelper {
     }
 
     public static dmpl__PriceListRules__c getPriceListRules() {
-        return [SELECT 
+        return [
+            SELECT 
                 Id, 
                 Name,
                 dmpl__ItemId__c,
+                dmpl__Price__c,
                 dmpl__SKUId__c,
                 dmpl__PriceListId__c,
                 dmpl__DateEffectiveTill__c,

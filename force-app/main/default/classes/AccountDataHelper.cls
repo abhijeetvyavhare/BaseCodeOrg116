@@ -528,6 +528,24 @@ public with sharing class AccountDataHelper {
             );
     }
 
+    public static dmpl__AccountStock__c createAccountStock(
+        Id partnerAccountId,
+        Id customerAccountId,
+    Id branchId,
+    Id ItemId     
+    ){
+        return (dmpl__AccountStock__c) TestFactory.createSObject(
+            new dmpl__AccountStock__c(
+            dmpl__AccountId__c = customerAccountId,
+        dmpl__PartnerAccountId__c = partnerAccountId,
+        dmpl__BranchId__c = branchId,
+        dmpl__ItemId__c = itemId
+        ),
+        'AccountStockDefaults',
+        true
+            );
+    }
+
     public static dmpl__AccountStock__c createAccountStockWithDefaults() {
         return createAccountStock(1000);
     }

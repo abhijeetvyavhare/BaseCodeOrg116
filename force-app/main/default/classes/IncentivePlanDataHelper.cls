@@ -1,4 +1,72 @@
 public with sharing class IncentivePlanDataHelper {
+     public static dmpl__IncentivePlan__c createIncentivePlan() {
+        return (dmpl__IncentivePlan__c) TestFactory.createSObject(
+            new dmpl__IncentivePlan__c(),
+            'IncentivePlanDefaults',
+            true
+        );
+    }
+
+    public static dmpl__IncentivePlan__c createIncentivePlan(
+        Id accountGroupId,
+        Id partnerAccountId,
+        Id supplierAccountId
+    ) {
+        return (dmpl__IncentivePlan__c) TestFactory.createSObject(
+            new dmpl__IncentivePlan__c(
+                dmpl__AccountGroupId__c = accountGroupId,
+                dmpl__PartnerAccountId__c = partnerAccountId,
+                dmpl__SupplierAccountId__c = supplierAccountId
+            ),
+            'IncentivePlanDefaults',
+            true
+        );
+    }
+
+    public static dmpl__IncentivePeriod__c createIncentivePeriod(
+        Id incentivePlanId
+    ) {
+        return (dmpl__IncentivePeriod__c) TestFactory.createSObject(
+            new dmpl__IncentivePeriod__c(
+                dmpl__IncentivePlanId__c = incentivePlanId
+            ),
+            'IncentivePeriodDefaults',
+            true
+        );
+    }
+
+    public static dmpl__IncentiveLine__c createIncentiveLine(
+        Id incentivePlanId,
+        String rewardApplicability
+    ) {
+        return (dmpl__IncentiveLine__c) TestFactory.createSObject(
+            new dmpl__IncentiveLine__c(
+                dmpl__IncentivePlanId__c = incentivePlanId,
+				dmpl__RewardApplicability__c = rewardApplicability
+            ),
+            'IncentiveLineDefaults',
+            true
+        );
+    }
+
+    public static dmpl__IncentiveCompensationSlab__c createCompensationSlab(
+        Id incentivePlanId,
+		String memberResourceType,
+        Id incentivePeriodId,
+		Id referenceIncentiveLineId
+    ) {
+        return (dmpl__IncentiveCompensationSlab__c) TestFactory.createSObject(
+            new dmpl__IncentiveCompensationSlab__c(
+                dmpl__IncentivePlanId__c = incentivePlanId,
+				dmpl__MemberResourceType__c = memberResourceType,
+                dmpl__IncentivePeriodId__c = incentivePeriodId,
+				dmpl__ReferenceIncentiveLineId__c = referenceIncentiveLineId
+            ),
+            'CompensationSlabDefaults',
+            true
+        );
+    }
+
     public static dmpl__IncentivePlan__c createIncentivePlan(
         String periodType,
         String memberType,
@@ -11,12 +79,6 @@ public with sharing class IncentivePlanDataHelper {
     ) {
         return (dmpl__IncentivePlan__c) TestFactory.createSObject(
             new dmpl__IncentivePlan__c(
-                Name = 'Test Incentive Plan',
-                dmpl__PeriodType__c = periodType,
-                dmpl__MemberType__c = memberType,
-                dmpl__Status__c = status,
-                dmpl__PeriodStartDate__c = periodStartDate,
-                dmpl__PeriodEndDate__c = periodEndDate,
                 dmpl__AccountGroupId__c = accountGroupId,
                 dmpl__PartnerAccountId__c = partnerAccountId,
                 dmpl__SupplierAccountId__c = supplierAccountId
@@ -45,7 +107,6 @@ public with sharing class IncentivePlanDataHelper {
                 dmpl__SupplierAccountId__c = supplierAccount !=null ? supplierAccount.Id : null,
                 dmpl__PartnerAccountId__c = partnerAccount != null ? partnerAccount.Id : null
             ),
-            //'IncentivePlanDefaults',
             true
         );
     }
@@ -97,7 +158,10 @@ public with sharing class IncentivePlanDataHelper {
         Id planId = plan.Id;
         delete plan;
         return [
-            SELECT COUNT() FROM dmpl__IncentivePlan__c WHERE Id = :planId
+            SELECT 
+                COUNT() 
+            FROM dmpl__IncentivePlan__c 
+            WHERE Id = :planId
         ];
     }
 
@@ -134,7 +198,6 @@ public with sharing class IncentivePlanDataHelper {
                 dmpl__DateTo__c = dateTo !=null ? dateTo : null,
                 dmpl__IncentivePlanId__c = incentivePlan !=null ? incentivePlan.Id : null
             ),
-            //'IncentivePeriodDefaults',
             true
         );
     }
@@ -178,7 +241,10 @@ public with sharing class IncentivePlanDataHelper {
         Id periodId = period.Id;
         delete period;
         return [
-            SELECT COUNT() FROM dmpl__IncentivePeriod__c WHERE Id = :periodId
+            SELECT 
+                COUNT()
+            FROM dmpl__IncentivePeriod__c 
+            WHERE Id = :periodId
         ];
     }
 
@@ -202,21 +268,19 @@ public with sharing class IncentivePlanDataHelper {
     }
 
     public static dmpl__IncentiveResource__c createIncentiveResource(
-        Account partnerAccount,
-        dmpl__Branch__c branch,
+        Id partnerAccountId,
+        Id branchId,
         String incentiveResourceName,
-        dmpl__IncentivePlan__c incentivePlan
+        Id incentivePlanId
     ) {
         return (dmpl__IncentiveResource__c) TestFactory.createSObject(
             new dmpl__IncentiveResource__c(
-                dmpl__PartnerAccountId__c= partnerAccount != null ? partnerAccount.Id : null,
-                dmpl__BranchId__c = branch !=null ? branch.Id :null,
+                dmpl__PartnerAccountId__c= partnerAccountId ,
+                dmpl__BranchId__c = branchId,
                 Name = incentiveResourceName != null ? incentiveResourceName : null,
-                dmpl__IncentivePlanId__c = incentivePlan != null ? incentivePlan.Id : null
-                
-                
+                dmpl__IncentivePlanId__c = incentivePlanId
             ),
-            //'IncentiveResourceDefaults',
+            'IncentiveResourceDefaults',
             true
         );
     }
@@ -260,7 +324,10 @@ public with sharing class IncentivePlanDataHelper {
         Id resourceId = resource.Id;
         delete resource;
         return [
-            SELECT COUNT() FROM dmpl__IncentiveResource__c WHERE Id = :resourceId
+            SELECT 
+                COUNT()
+            FROM dmpl__IncentiveResource__c 
+            WHERE Id = :resourceId
         ];
     }
 
@@ -326,11 +393,13 @@ public with sharing class IncentivePlanDataHelper {
         Id lineId = line.Id;
         delete line;
         return [
-            SELECT COUNT() FROM dmpl__IncentiveLine__c WHERE Id = :lineId
+            SELECT 
+                COUNT()
+            FROM dmpl__IncentiveLine__c 
+            WHERE Id = :lineId
         ];
     }
 
-	
     public static dmpl__IncentiveLine__c createIncentiveLine(
         Id incentivePlanId,
         String rewardApplicability,
@@ -343,30 +412,6 @@ public with sharing class IncentivePlanDataHelper {
 				dmpl__DefinitionFilterCriteria__c = definitionFilterCriteria
             ),
             'IncentiveLineDefaults',
-            true
-        );
-    }
-
-	public static dmpl__IncentiveCompensationSlab__c createCompensationSlab(
-        Id incentivePlanId,
-		String memberResourceType,
-        String compensationType,
-        Id incentivePeriodId,
-		Id referenceIncentiveLineId,
-		Decimal giftPoints,
-        Decimal sequenceNumber
-    ) {
-        return (dmpl__IncentiveCompensationSlab__c) TestFactory.createSObject(
-            new dmpl__IncentiveCompensationSlab__c(
-                dmpl__IncentivePlanId__c = incentivePlanId,
-				dmpl__MemberResourceType__c = memberResourceType,
-                dmpl__CompensationType__c = compensationType,
-                dmpl__IncentivePeriodId__c = incentivePeriodId,
-				dmpl__ReferenceIncentiveLineId__c = referenceIncentiveLineId,
-				dmpl__GiftPoints__c = giftPoints,
-                dmpl__SequenceNumber__c = sequenceNumber
-            ),
-            'CompensationSlabDefaults',
             true
         );
     }
@@ -408,37 +453,58 @@ public with sharing class IncentivePlanDataHelper {
         ];
     }
 
-     
     public static dmpl__IncentiveCompensation__c createCompensation(
         Id incentivePlanId,
-    Id branchId,
-    Id partnerAccountId,
-    Id accountID,
-    Id incentivePeriodId
+        Id branchId,
+        Id partnerAccountId,
+        Id accountID,
+        Id incentivePeriodId
     ) {
         return (dmpl__IncentiveCompensation__c) TestFactory.createSObject(
             new dmpl__IncentiveCompensation__c(
-            dmpl__AccountId__c =  accountID,
-        dmpl__BranchId__c = branchId,
-        dmpl__PartnerAccountId__c = partnerAccountId,
-        dmpl__IncentivePeriodId__c = incentivePeriodId,
-        dmpl__IncentivePlanId__c = incentivePlanId
+                dmpl__AccountId__c =  accountID,
+                dmpl__BranchId__c = branchId,
+                dmpl__PartnerAccountId__c = partnerAccountId,
+                dmpl__IncentivePeriodId__c = incentivePeriodId,
+                dmpl__IncentivePlanId__c = incentivePlanId
             ),
-        'CompensationDefaults',
-        true
-            );
+            'CompensationDefaults',
+            true
+        );
     }
-    
-    
+     public static dmpl__IncentiveCompensation__c createCompensation(
+        Id incentivePlanId,
+        Id branchId,
+        Id partnerAccountId
+    ) {
+        return (dmpl__IncentiveCompensation__c) TestFactory.createSObject(
+            new dmpl__IncentiveCompensation__c(
+                dmpl__BranchId__c = branchId,
+                dmpl__PartnerAccountId__c = partnerAccountId,
+                dmpl__IncentivePlanId__c = incentivePlanId
+            ),
+            'CompensationDefaults',
+            true
+        );
+    }
+
     public static dmpl__IncentiveCompensation__c getCompensation(Id compensationId) {
         return [
-            SELECT Id, Name, dmpl__AccountId__c, dmpl__BranchId__c, dmpl__PartnerAccountId__c, dmpl__IncentivePeriodId__c, dmpl__IncentivePlanId__c, dmpl__Status__c, dmpl__TotalIncentiveAmount__c
+            SELECT Id, 
+                Name, 
+                dmpl__AccountId__c, 
+                dmpl__BranchId__c, 
+                dmpl__PartnerAccountId__c, 
+                dmpl__IncentivePeriodId__c, 
+                dmpl__IncentivePlanId__c, 
+                dmpl__Status__c, 
+                dmpl__TotalIncentiveAmount__c
             FROM dmpl__IncentiveCompensation__c
             WHERE Id = :compensationId
             LIMIT 1
         ];
     }
-    
+
     public static dmpl__IncentiveCompensationLine__c createCompensationLine(
         Id compensationId,
         Id incentivePlanId,
@@ -453,15 +519,21 @@ public with sharing class IncentivePlanDataHelper {
                 true
             );
     }
-    
+
     public static dmpl__IncentiveCompensationLine__c getCompensationLine(Id lineId) {
         return [
-            SELECT Id, dmpl__CompensationId__c, dmpl__IncentivePlanId__c, dmpl__IncentivePeriodId__c, dmpl__ItemId__c, dmpl__SKUId__c,
-                   dmpl__IncentiveAmount__c, dmpl__Status__c,dmpl__SchemeId__c
+            SELECT Id, 
+                    dmpl__CompensationId__c, 
+                    dmpl__IncentivePlanId__c, 
+                    dmpl__IncentivePeriodId__c, 
+                    dmpl__ItemId__c, 
+                    dmpl__SKUId__c,
+                    dmpl__IncentiveAmount__c, 
+                    dmpl__Status__c,
+                    dmpl__SchemeId__c
             FROM dmpl__IncentiveCompensationLine__c
             WHERE Id = :lineId
             LIMIT 1
         ];
     }
-    
 }

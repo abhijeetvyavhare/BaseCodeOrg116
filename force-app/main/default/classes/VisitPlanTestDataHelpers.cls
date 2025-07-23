@@ -1,6 +1,7 @@
 public with sharing class VisitPlanTestDataHelpers {
-    public static dmpl__VisitRouteStop__c CreateVisitRouteStop(Account act,dmpl__VisitRoute__c route)
-    {
+    public static dmpl__VisitRouteStop__c CreateVisitRouteStop(
+        Account act,dmpl__VisitRoute__c route
+    ) {
         return (dmpl__VisitRouteStop__c) TestFactory.createSObject(
             new dmpl__VisitRouteStop__c(
                 dmpl__AllowedGeofencingTolerance__c = 10,
@@ -81,9 +82,9 @@ public with sharing class VisitPlanTestDataHelpers {
     ) {
         return (dmpl__VisitRoute__c)TestFactory.createSObject(
             new dmpl__VisitRoute__c(
-                dmpl__PartnerAccountId__c = act.Id,
-                dmpl__AccountGroupId__c = actGroup.Id,
-                dmpl__ResourceId__c = resource.Id,
+                dmpl__PartnerAccountId__c = act?.Id ?? null,
+                dmpl__AccountGroupId__c = actGroup?.Id ?? null,
+                dmpl__ResourceId__c = resource?.Id ?? null,
                 dmpl__CoverageMidpointDistance__c = 10,
                 dmpl__IsActive__c = true,
                 dmpl__VisitPurpose__c = 'Order Capture',
@@ -97,21 +98,22 @@ public with sharing class VisitPlanTestDataHelpers {
     }
     
     public static dmpl__VisitRoute__c getVisitRoute() {
-        return [SELECT 
-                    Id,
-                    Name,
-                    dmpl__PartnerAccountId__c,
-                    dmpl__AccountGroupId__c,
-                    dmpl__ResourceId__c,
-                    dmpl__CoverageMidpointDistance__c,
-                    dmpl__IsActive__c,
-                    dmpl__VisitPurpose__c,
-                    dmpl__RoutingPriority__c,
-                    dmpl__WeekNumbers__c,
-                    dmpl__DayNumbers__c
-                FROM dmpl__VisitRoute__c   
-                LIMIT 1
-            ];
+        return [
+            SELECT 
+                Id,
+                Name,
+                dmpl__PartnerAccountId__c,
+                dmpl__AccountGroupId__c,
+                dmpl__ResourceId__c,
+                dmpl__CoverageMidpointDistance__c,
+                dmpl__IsActive__c,
+                dmpl__VisitPurpose__c,
+                dmpl__RoutingPriority__c,
+                dmpl__WeekNumbers__c,
+                dmpl__DayNumbers__c
+            FROM dmpl__VisitRoute__c   
+            LIMIT 1
+        ];
     }
     
     public static dmpl__VisitPlan__c CreateVisitPlan(
@@ -134,33 +136,35 @@ public with sharing class VisitPlanTestDataHelpers {
 
     public static dmpl__VisitPlan__c getVisitPlan() {
         return [
-                SELECT 
-                    Id,
-                    Name,
-                    dmpl__PartnerAccountId__c,
-                    dmpl__VisitRouteId__c,
-                    dmpl__VisitTaskTemplateId__c,
-                    dmpl__Status__c,
-                    dmpl__VisitPurpose__c
-                FROM dmpl__VisitPlan__c   
-                LIMIT 1
-            ];
+            SELECT 
+                Id,
+                Name,
+                dmpl__PartnerAccountId__c,
+                dmpl__VisitRouteId__c,
+                dmpl__VisitTaskTemplateId__c,
+                dmpl__Status__c,
+                dmpl__VisitPurpose__c
+            FROM dmpl__VisitPlan__c   
+            LIMIT 1
+        ];
     }
     
-    public static dmpl__VisitPlan__c getVisitPlan(Id visitPlanId) {
+    public static dmpl__VisitPlan__c getVisitPlan(
+        Id visitPlanId
+    ) {
         return [
-                SELECT 
-                    Id,
-                    Name,
-                    dmpl__PartnerAccountId__c,
-                    dmpl__VisitRouteId__c,
-                    dmpl__VisitTaskTemplateId__c,
-                    dmpl__Status__c,
-                    dmpl__VisitPurpose__c
-                FROM dmpl__VisitPlan__c   
-            	WHERE Id = :visitPlanId
-                LIMIT 1
-            ];
+            SELECT 
+                Id,
+                Name,
+                dmpl__PartnerAccountId__c,
+                dmpl__VisitRouteId__c,
+                dmpl__VisitTaskTemplateId__c,
+                dmpl__Status__c,
+                dmpl__VisitPurpose__c
+            FROM dmpl__VisitPlan__c   
+            WHERE Id = :visitPlanId
+            LIMIT 1
+        ];
     }
     
     public static dmpl__VisitTask__c CreateVisitTask(
@@ -182,21 +186,20 @@ public with sharing class VisitPlanTestDataHelpers {
     
     public static dmpl__VisitTask__c getVisitTask() {
         return [
-                SELECT 
-                    Id,
-                    Name,
-                    dmpl__VisitId__c,
-                    dmpl__TaskType__c,
-                    dmpl__SequenceNumber__c,
-                    dmpl__VisitTaskTemplateEntryId__c,
-                    dmpl__Status__c
-                FROM dmpl__VisitTask__c   
-                LIMIT 1
-            ];
+            SELECT 
+                Id,
+                Name,
+                dmpl__VisitId__c,
+                dmpl__TaskType__c,
+                dmpl__SequenceNumber__c,
+                dmpl__VisitTaskTemplateEntryId__c,
+                dmpl__Status__c
+            FROM dmpl__VisitTask__c   
+            LIMIT 1
+        ];
     }
     
-    public static dmpl__VisitTaskTemplate__c CreateVisitTaskTemplate()
-    {
+    public static dmpl__VisitTaskTemplate__c CreateVisitTaskTemplate() {
         return (dmpl__VisitTaskTemplate__c)TestFactory.createSObject(
             new dmpl__VisitTaskTemplate__c(
                 dmpl__Description__c = 'Visit Task Template1',
@@ -210,18 +213,19 @@ public with sharing class VisitPlanTestDataHelpers {
     
     public static dmpl__VisitTaskTemplate__c getVisitTaskTemplate() {
         return [
-                SELECT 
-                    Id,
-                    Name,
-                    dmpl__Description__c,
-                    dmpl__Duration__c
-                FROM dmpl__VisitTaskTemplate__c   
-                LIMIT 1
+            SELECT 
+                Id,
+                Name,
+                dmpl__Description__c,
+                dmpl__Duration__c
+            FROM dmpl__VisitTaskTemplate__c   
+            LIMIT 1
         ];
     }
     
-    public static dmpl__VisitTaskTemplateEntry__c CreateVisitTaskTemplateEntry(dmpl__VisitTaskTemplate__c task)
-    {
+    public static dmpl__VisitTaskTemplateEntry__c CreateVisitTaskTemplateEntry(
+        dmpl__VisitTaskTemplate__c task
+    ) {
         return (dmpl__VisitTaskTemplateEntry__c)TestFactory.createSObject(
             new dmpl__VisitTaskTemplateEntry__c(
                 dmpl__TaskType__c = 'Perform Visit Activities',
@@ -246,8 +250,9 @@ public with sharing class VisitPlanTestDataHelpers {
         ];
     }
     
-    public static dmpl__VisitTaskActivity__c CreateVisitTaskActivity(dmpl__VisitTask__c task)
-    {
+    public static dmpl__VisitTaskActivity__c CreateVisitTaskActivity(
+        dmpl__VisitTask__c task
+    ) {
         return (dmpl__VisitTaskActivity__c)TestFactory.createSObject(
             new dmpl__VisitTaskActivity__c(
                 dmpl__VisitTaskId__c = task.Id,
@@ -281,7 +286,9 @@ public with sharing class VisitPlanTestDataHelpers {
         ];
     }
     
-    public static dmpl__VisitTaskActivity__c getVisitTaskActivity(dmpl__VisitTask__c visitTask) {
+    public static dmpl__VisitTaskActivity__c getVisitTaskActivity(
+        dmpl__VisitTask__c visitTask
+    ) {
         return [
             SELECT 
                 Id,
@@ -299,8 +306,9 @@ public with sharing class VisitPlanTestDataHelpers {
         ];
     }
         
-    public static dmpl__VisitTaskTemplateActivity__c CreateVisitTaskTemplateActivity(dmpl__VisitTaskTemplateEntry__c taskEntry)
-    {
+    public static dmpl__VisitTaskTemplateActivity__c CreateVisitTaskTemplateActivity(
+        dmpl__VisitTaskTemplateEntry__c taskEntry
+    ) {
         return (dmpl__VisitTaskTemplateActivity__c)TestFactory.createSObject(
             new dmpl__VisitTaskTemplateActivity__c(
                 dmpl__VisitTaskTemplateEntryId__c = taskEntry.Id,
@@ -361,7 +369,11 @@ public with sharing class VisitPlanTestDataHelpers {
         ];
     }
     
-    public static dmpl__Visit__c createVisit(Account partnerAccount, dmpl__Branch__c branch, Id VisitPlanId) {
+    public static dmpl__Visit__c createVisit(
+        Account partnerAccount, 
+        dmpl__Branch__c branch, 
+        Id VisitPlanId
+    ) {
         dmpl__Visit__c visit = new dmpl__Visit__c(
             dmpl__PartnerAccountId__c = partnerAccount.Id,
             dmpl__BranchId__c = branch.Id,
@@ -371,7 +383,14 @@ public with sharing class VisitPlanTestDataHelpers {
         return visit;
     }
 
-    public static dmpl__VisitPlan__c createVisitPlan(Account partnerAccount, dmpl__Branch__c branch,String visitPurpose, String status, DateTime StartDate, DateTime EndDate) {
+    public static dmpl__VisitPlan__c createVisitPlan(
+        Account partnerAccount, 
+        dmpl__Branch__c branch,
+        String visitPurpose, 
+        String status, 
+        DateTime StartDate, 
+        DateTime EndDate
+    ) {
         dmpl__VisitPlan__c visit = new dmpl__VisitPlan__c(
             dmpl__PartnerAccountId__c = partnerAccount.Id,
             dmpl__BranchId__c = branch.Id,
@@ -384,28 +403,63 @@ public with sharing class VisitPlanTestDataHelpers {
         return visit;
     }
 
-    public static dmpl__VisitPlan__c getVisitPlan(Account partnerAccount) {
-        return [SELECT Id, dmpl__VisitPurpose__c, dmpl__Status__c, dmpl__PlanStartDate__c, dmpl__PlanEndDate__c FROM dmpl__VisitPlan__c WHERE dmpl__PartnerAccountId__c = :partnerAccount.Id LIMIT 1];
+    public static dmpl__VisitPlan__c getVisitPlan(
+        Account partnerAccount
+    ) {
+        return [
+            SELECT 
+                Id, 
+                dmpl__VisitPurpose__c, 
+                dmpl__Status__c, 
+                dmpl__PlanStartDate__c, 
+                dmpl__PlanEndDate__c 
+                FROM dmpl__VisitPlan__c 
+                WHERE dmpl__PartnerAccountId__c = :partnerAccount.Id 
+                LIMIT 1
+        ];
     }
 
-    public static dmpl__VisitTask__c createVisitTask(String TaskNumber, Id vist, Id VisitPurpose,String TaskType,String status){
+    public static dmpl__VisitTask__c createVisitTask(
+        String TaskNumber, 
+        Id vist, 
+        Id VisitPurpose,
+        String TaskType,
+        String status
+    ) {
         dmpl__VisitTask__c visitTask = new dmpl__VisitTask__c(
             dmpl__TaskName__c = TaskNumber,
             dmpl__VisitId__c = vist,
             dmpl__VisitTaskTemplateEntryId__c = VisitPurpose,
             dmpl__TaskType__c = TaskType,
             dmpl__Status__c = status
-            //dmpl__VisitTaskTemplateEntryId__c = entryName
         );
         insert visitTask;
         return visitTask;
     }
 
-    public static dmpl__VisitTask__c getVisitTask(String TaskNumber) {
-        return [SELECT Id, Name, dmpl__VisitId__c, dmpl__TaskType__c, dmpl__Status__c, dmpl__VisitTaskTemplateEntryId__c FROM dmpl__VisitTask__c WHERE Name = :TaskNumber LIMIT 1];
+    public static dmpl__VisitTask__c getVisitTask(
+        String TaskNumber
+    ) {
+        return [
+            SELECT 
+                Id, 
+                Name, 
+                dmpl__VisitId__c, 
+                dmpl__TaskType__c, 
+                dmpl__Status__c, 
+                dmpl__VisitTaskTemplateEntryId__c 
+                FROM dmpl__VisitTask__c 
+                WHERE Name = :TaskNumber 
+                LIMIT 1
+        ];
     }
 
-    public static dmpl__VisitTaskActivity__c createVisitTaskActivity(String name, Id visitid, Time StartDateTime, Time EndDateTime) {
+    public static dmpl__VisitTaskActivity__c createVisitTaskActivity(
+        String name, 
+        Id visitid, 
+        Time StartDateTime, 
+        Time EndDateTime
+    ) {
         dmpl__VisitTaskActivity__c visitTaskActivity = new dmpl__VisitTaskActivity__c(
             dmpl__ActivityName__c = name,
             dmpl__VisitTaskId__c = visitid,
@@ -416,12 +470,26 @@ public with sharing class VisitPlanTestDataHelpers {
         return visitTaskActivity;
     }
 
-    public static dmpl__VisitTaskActivity__c getVisitTaskActivity(String autonumber) {
-        return [SELECT Id, dmpl__ActivityName__c, Name, dmpl__PlannedStartTime__c, dmpl__PlannedEndTime__c FROM dmpl__VisitTaskActivity__c WHERE Name = :autonumber LIMIT 1];
+    public static dmpl__VisitTaskActivity__c getVisitTaskActivity(
+        String autonumber
+    ) {
+        return [
+            SELECT 
+            Id, 
+            dmpl__ActivityName__c, 
+            Name, 
+            dmpl__PlannedStartTime__c, 
+            dmpl__PlannedEndTime__c 
+            FROM dmpl__VisitTaskActivity__c 
+            WHERE Name = :autonumber 
+            LIMIT 1
+        ];
     }
 
-    public static dmpl__VisitTaskTemplate__c createVisitTaskTemplate(String TemplateName,Integer Duration)
-    {
+    public static dmpl__VisitTaskTemplate__c createVisitTaskTemplate(
+        String TemplateName,
+        Integer Duration
+    ) {
         dmpl__VisitTaskTemplate__c visitTaskTemplate = new dmpl__VisitTaskTemplate__c(
             Name = TemplateName,
             dmpl__Duration__c = Duration
@@ -430,8 +498,11 @@ public with sharing class VisitPlanTestDataHelpers {
         return visitTaskTemplate;
     }
 
-    public static dmpl__VisitTaskTemplateEntry__c createVisitTaskTemplateEntry(String Name,String VisitTaskTemplateId,String tasktype)
-    {
+    public static dmpl__VisitTaskTemplateEntry__c createVisitTaskTemplateEntry(
+        String Name,
+        String VisitTaskTemplateId,
+        String tasktype
+    ) {
         dmpl__VisitTaskTemplateEntry__c visitTaskTemplateEntry = new dmpl__VisitTaskTemplateEntry__c(
             Name = Name,
             dmpl__VisitTaskTemplateId__c = VisitTaskTemplateId,
