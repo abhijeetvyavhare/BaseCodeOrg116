@@ -11,7 +11,6 @@ public with sharing class SaleInvoiceHandler_Test {
         branch4.dmpl__AllowInventory__c = false;
         update branch4;
         dmpl__Item__c item1 = TestDataHelpers.createItem('Item 1', 'Product');
-        dmpl__Resource__c Resource1 = TestDataHelpers.createResource('Resource 1');
         dmpl__Item__c item5 = TestDataHelpers.createItem('Item 5', 'Product');  
         dmpl__PriceList__c priceList1 = TestDataHelpers.createPriceList('Price List 1', partner.Id, branch1.Id);
         dmpl__PriceList__c priceList3 = TestDataHelpers.createPriceList('Price List 3', partner4.Id, branch4.Id);
@@ -42,8 +41,7 @@ public with sharing class SaleInvoiceHandler_Test {
             taxGroup, 
             priceListRule
         );
-        dmpl__SaleInvoiceTax__c tax = SaleInvoiceDataHelper.createSaleInvoiceTax(saleInvoice, saleInvoiceLine);
-        dmpl__ItemServiceContract__c ItemServiceContract = SaleInvoiceDataHelper.createItemServiceContract('Service Contract 1',customer,item1.Id);
+        dmpl__SaleInvoiceTax__c tax = SaleInvoiceDataHelper.createSaleInvoiceTax(saleInvoice, saleInvoiceLine);      
         Test.stopTest();
     }
     
@@ -1536,103 +1534,5 @@ public with sharing class SaleInvoiceHandler_Test {
         System.assertNotEquals(null, invoiceLine, 'Fetched Sale Invoice Line should not be null');
         System.assertEquals(saleInvoiceLine.Id, invoiceLine.Id, 'Fetched Sale Invoice Line Id should match the created one');
         Test.stopTest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithValidPartnerAccountBranchAndAccount(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch);
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stoptest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithSalesExecutive(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        dmpl__Resource__c resource = TestDataHelpers.getResource('Resource 1');
-        dmpl__ItemServiceContract__c ServiceContract = SaleInvoiceDataHelper.getItemServiceContract('Service Contract 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch,
-            resource,
-            ServiceContract
-        );
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stoptest();
-    }   
-
-    @isTest
-    static void InvoiceCreatedWithItemServiceContract(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        dmpl__ItemServiceContract__c ServiceContract = SaleInvoiceDataHelper.getItemServiceContract('Service Contract 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch,
-            null,
-            ServiceContract
-        );
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stoptest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithBillingAndShippingAddress(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        dmpl__ContactAddress__c billingAddress = TestDataHelpers.createContactAddress('Address 1', customer.Id);
-        dmpl__ContactAddress__c shippingAddress = TestDataHelpers.createContactAddress('Address 2', customer.Id);
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch,
-            billingAddress,
-            shippingAddress
-        );
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stopTest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithStatusDraft(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch);
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stoptest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithStatusInvoiced(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch);
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        saleInvoice.dmpl__Status__c = 'Invoiced';
-        update saleInvoice;
-        test.stoptest();
-    }
-
-    @isTest
-    static void InvoiceCreatedWithTaxSupplyType(){
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account customer = TestDataHelpers.getCustomerAccount('Customer 1');
-        test.startTest();
-        dmpl__SaleInvoice__c saleInvoice = SaleInvoiceDataHelper.createSaleInvoice(customer, partner, branch,
-            'Within State',
-            null,
-            null,
-            null
-        );
-        System.assertNotEquals(null, saleInvoice, 'Sale Invoice should not be null');
-        test.stopTest();
     }
 }

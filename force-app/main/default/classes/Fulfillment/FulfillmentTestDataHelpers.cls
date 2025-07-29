@@ -71,8 +71,8 @@ public with sharing class FulfillmentTestDataHelpers {
       new dmpl__InventoryFulfillmentOrderLine__c(
         dmpl__FulfillmentId__c = inventoryFulfillment.Id,
         dmpl__ItemId__c = item.Id,
-        dmpl__SKUId__c = sku.Id,
-        dmpl__SaleOrderLineId__c = saleOrderLine.Id,
+        dmpl__SKUId__c = sku?.Id,
+        dmpl__SaleOrderLineId__c = saleOrderLine?.Id,
         dmpl__Quantity__c = 15
       ),
       true
@@ -88,8 +88,11 @@ public with sharing class FulfillmentTestDataHelpers {
         dmpl__ItemId__c,
         dmpl__SKUId__c,
         dmpl__SaleOrderLineId__c,
+        dmpl__StorageLocationId__c,
+        dmpl__RepairOrderLineId__c,
         dmpl__IsILPosted__c,
-        dmpl__Quantity__c
+        dmpl__Quantity__c,
+        dmpl__UnitCost__c
       FROM dmpl__InventoryFulfillmentOrderLine__c
       LIMIT 1
     ];
