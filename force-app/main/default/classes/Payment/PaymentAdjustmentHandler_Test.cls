@@ -2,13 +2,13 @@
 private class PaymentAdjustmentHandler_Test {
     @TestSetup
     static void createRequiredData() {
-        Test.startTest();
         Account customerAccount = TestDataHelpers.createCustomerAccount();
         Account partnerAccount = TestDataHelpers.createPartnerAccount();
         dmpl__Branch__c branch = TestDataHelpers.createBranch(partnerAccount);  
-        dmpl__PriceList__c priceList = TestDataHelpers.createPriceList(partnerAccount, branch);
+        dmpl__PriceList__c priceList = TestDataHelpers.createPriceList('Price List 1', PartnerAccount.Id, branch.Id);
         dmpl__ContactAddress__c contactAddress = TestDataHelpers.createContactAddress(customerAccount);
-        dmpl__Item__c item = TestDataHelpers.createItem();
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 1', 'Product');
+        dmpl__PriceListRules__c priceListRule = TestDataHelpers.createPriceListRules(priceList.Id, item.Id, 1500);
         dmpl__StorageLocation__c storageLocation = TestDataHelpers.createStorageLocation(branch);
         dmpl__SKU__c sku = TestDataHelpers.createSKU(item);
         dmpl__ItemLot__c itemLot = TestDataHelpers.createItemLot(
@@ -25,7 +25,6 @@ private class PaymentAdjustmentHandler_Test {
                 priceList
         );
         dmpl__TaxGroup__c taxGroup = TestDataHelpers.createTaxGroup(partnerAccount, branch);
-        dmpl__PriceListRules__c priceListRule = TestDataHelpers.createPriceListRules(priceList, item);
         dmpl__SaleInvoiceLine__c saleInvoiceLine = SaleInvoiceDataHelper.createSaleInvoiceLine(
             saleInvoice,
             item,
@@ -34,6 +33,7 @@ private class PaymentAdjustmentHandler_Test {
             taxGroup,
             priceListRule
         );
+        Test.startTest();
         dmpl__Payment__c payment = PaymentAdjustmentTestDataHelpers.createPayment(customerAccount, partnerAccount, branch);
         dmpl__PaymentAdjustment__c adjustment = PaymentAdjustmentTestDataHelpers.createPaymentAdjustment(payment, saleInvoice, 100);
         Test.stopTest();

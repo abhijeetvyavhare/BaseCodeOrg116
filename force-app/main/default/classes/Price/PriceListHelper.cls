@@ -1,3 +1,4 @@
+
 @namespaceAccessible
 public with sharing class PriceListHelper {
 

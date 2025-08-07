@@ -858,6 +858,7 @@ public with sharing class PurchaseOrderHandler_Test {
         }
         Test.stopTest();
     }  
+
     @isTest
     static void purchaseOrderLineWithItemWithoutTaxGroupEditPositive() {
         Test.startTest();
@@ -1321,11 +1322,10 @@ public with sharing class PurchaseOrderHandler_Test {
         System.assertEquals('Draft', purchaseOrder.dmpl__Status__c, 'Status should be Draft.');
         System.assertEquals(Date.today(), purchaseOrder.dmpl__DocumentDate__c, 'Document Date should be today');
         System.assertEquals(20, purchaseOrderLine.dmpl__Quantity__c, 'Quantity should be 20.');
-
         Test.stopTest();
     }
     
-   @isTest
+    @isTest
     static void endToEndPurchaseOrderFlowValidation() {
         Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
         Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
@@ -1398,7 +1398,7 @@ public with sharing class PurchaseOrderHandler_Test {
     }
 
     @isTest
-   static void purchaseOrderFullFlowValidationWithEdgeCasesinvalidItemAndQuantity() {
+    static void purchaseOrderFullFlowValidationWithEdgeCasesinvalidItemAndQuantity() {
         Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
         Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
         dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
@@ -1627,7 +1627,7 @@ public with sharing class PurchaseOrderHandler_Test {
             poLine,
             0
         );
-        } catch (DmlException e) {
+        }catch (DmlException e) {
             shipmentLineFail = true;
         }
         System.assertEquals(true, shipmentLineFail);
@@ -1704,50 +1704,221 @@ public with sharing class PurchaseOrderHandler_Test {
     
     @isTest
     static void purchaseOrderToGoodsReceiptFlowWithInactiveItemAndInvalidQty() {
-    Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
-    Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-    dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-    dmpl__Item__c activeItem = TestDataHelpers.getItem('Item 1');
-    dmpl__Item__c inactiveItem = TestDataHelpers.createItem('Item 2', 'Product');
-    inactiveItem.dmpl__IsActive__c = false;
-    update inactiveItem;
-    Test.startTest();
-    dmpl__PurchaseOrder__c po =PurchaseOrderTestDataHelpers.getPurchaseOrder(); 
-    System.assertNotEquals(null, po.Id);
-    System.assertEquals(partner.Id, po.dmpl__PartnerAccountId__c);
-    System.assertEquals(branch.Id, po.dmpl__BranchId__c);
-    System.assertEquals('Draft', po.dmpl__Status__c);
-    Boolean poLineFailed = false;
-    try {
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c activeItem = TestDataHelpers.getItem('Item 1');
+        dmpl__Item__c inactiveItem = TestDataHelpers.createItem('Item 2', 'Product');
+        inactiveItem.dmpl__IsActive__c = false;
+        update inactiveItem;
+        Test.startTest();
+        dmpl__PurchaseOrder__c po =PurchaseOrderTestDataHelpers.getPurchaseOrder(); 
+        System.assertNotEquals(null, po.Id);
+        System.assertEquals(partner.Id, po.dmpl__PartnerAccountId__c);
+        System.assertEquals(branch.Id, po.dmpl__BranchId__c);
+        System.assertEquals('Draft', po.dmpl__Status__c);
+        Boolean poLineFailed = false;
+        try {
 
-     dmpl__PurchaseOrderLine__c poLine = PurchaseOrderTestDataHelpers.createPurchaseOrderLine(
-        po.Id,
-        inactiveItem.Id,
-        null,
-        0
-    );
-    } catch (DmlException e) {
-        poLineFailed = true;
+        dmpl__PurchaseOrderLine__c poLine = PurchaseOrderTestDataHelpers.createPurchaseOrderLine(
+            po.Id,
+            inactiveItem.Id,
+            null,
+            0
+        );
+        } catch (DmlException e) {
+            poLineFailed = true;
+        }
+        System.assertEquals(true, poLineFailed);
+        dmpl__Shipment__c shipment = ShipmentTestDataHelper.createShipment(supplier, branch, po);
+        dmpl__GoodsReceipt__c gr = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+            partner,
+            branch, 
+            po, 
+            supplier
+        );
+        dmpl__GoodsReceiptLine__c grLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(
+            gr.Id,
+            activeItem.Id,
+            null
+        );
+        grLine.dmpl__OrderedQuantity__c = 10;
+        grLine.dmpl__SupplierQuantity__c = 10;
+        update grLine;
+        System.assertNotEquals(null, grLine.Id);
+        System.assertEquals(10, grLine.dmpl__OrderedQuantity__c);
+        System.assertEquals(10, grLine.dmpl__SupplierQuantity__c);
+        Test.stopTest();
     }
-    System.assertEquals(true, poLineFailed);
-    dmpl__Shipment__c shipment = ShipmentTestDataHelper.createShipment(supplier, branch, po);
-    dmpl__GoodsReceipt__c gr = GoodRecieptsTestDataHelpers.createGoodsReceipt(
-        partner,
-        branch, 
-        po, 
-        supplier
-    );
-    dmpl__GoodsReceiptLine__c grLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(
-        gr.Id,
-        activeItem.Id,
-        null
-    );
-    grLine.dmpl__OrderedQuantity__c = 10;
-    grLine.dmpl__SupplierQuantity__c = 10;
-    update grLine;
-    System.assertNotEquals(null, grLine.Id);
-    System.assertEquals(10, grLine.dmpl__OrderedQuantity__c);
-    System.assertEquals(10, grLine.dmpl__SupplierQuantity__c);
-    Test.stopTest();
-}
+
+    @isTest
+    static void purchaseOrderwithPerformReleaseInvoice() {
+        Test.startTest();
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__TaxGroup__c taxGroupGST28 = TestDataHelpers.getTaxGroup('GST 28');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        System.assertNotEquals(purchaseOrder, null, 'Expected purchaseOrder to be created.');
+        System.assertEquals('Draft', purchaseOrder.dmpl__Status__c, 'Status should be Draft.');
+        System.assertEquals(supplier.Id, purchaseOrder.dmpl__SupplierAccountId__c, 'Supplier Account Id should be null.');
+        System.assertEquals(partner.Id, purchaseOrder.dmpl__PartnerAccountId__c, 'Partner Account Id should be null.');
+        System.assertEquals(branch.Id, purchaseOrder.dmpl__BranchId__c, 'Branch Id should be null.');
+        dmpl__PurchaseOrderLine__c updatedPurchaseOrderLine = PurchaseOrderTestDataHelpers.getPurchaseOrderLine(purchaseOrder.Id);
+        System.assertEquals(item.Id, updatedPurchaseOrderLine.dmpl__ItemId__c, 'ItemId should match.');
+        System.assertEquals(taxGroupGST28.Id, updatedPurchaseOrderLine.dmpl__TaxGroupId__c, 'TaxGroupId should match.');
+        System.assertEquals(20, updatedPurchaseOrderLine.dmpl__Quantity__c, 'Quantity should be 20.');
+        System.assertEquals(1500, updatedPurchaseOrderLine.dmpl__UnitCost__c, 'Unit cost should be 1500.');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax1__c, 'Tax1 should be 4200');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Name__c, 'Tax1Name should be CGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax1Rate__c, 'Tax1Rate should be 14');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Type__c, 'Tax1Type should be CGST');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax2__c, 'Tax2 should be 4200');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Name__c, 'Tax2Name should be SGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax2Rate__c, 'Tax2Rate should be 14');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Type__c, 'Tax2Type should be SGST');
+        System.assertEquals(30000, updatedPurchaseOrderLine.dmpl__BaseAmount__c, 'BaseAmount should be 30000');
+        System.assertEquals(8400, updatedPurchaseOrderLine.dmpl__TaxAmount__c, 'TaxAmount should be 8400');
+        System.assertEquals(38400, updatedPurchaseOrderLine.dmpl__GrossAmount__c, 'GrossAmount should be 38400');
+        purchaseOrder.dmpl__PerformReleaseInvoice__c = true;
+        update purchaseOrder;
+        dmpl__Bill__c bill = BillTestDataHelpers.getBill(purchaseOrder);
+        System.assertEquals(partner.Id, bill.dmpl__PartnerAccountId__c, 'Partner mismatch');
+        System.assertEquals(branch.Id, bill.dmpl__BranchId__c, 'Branch mismatch');
+        System.assertEquals(Date.today(), bill.dmpl__DocumentDate__c, 'Document date mismatch');
+        System.assertEquals('Partner 1', bill.dmpl__AccountName__c, 'Account Name mismatch');
+        System.assertEquals(30000, bill.dmpl__TotalLineBaseAmount__c, 'Final bill base amount mismatch');
+        System.assertEquals(38400, bill.dmpl__TotalAmount__c, 'Final bill amount mismatch');
+        System.assertEquals(0, bill.dmpl__TotalDiscountAmount__c, 'Final net discount mismatch');
+        System.assertEquals(0, bill.dmpl__TotalSchemeDiscountAmount__c, 'Final net scheme discount mismatch');
+        dmpl__BillLine__c billLine = BillTestDataHelpers.getBillLine(bill.Id);
+        System.assertEquals(item.Id, billLine.dmpl__ItemId__c, 'Bill line item mismatch');
+        System.assertEquals(20, billLine.dmpl__Quantity__c, 'Bill line quantity mismatch');
+        System.assertEquals(1500, billLine.dmpl__UnitCost__c, 'Bill line unit cost mismatch');
+        System.assertEquals(20, billLine.dmpl__InvoiceQuantity__c, 'Invoice quantity mismatch');
+        System.assertEquals(20, billLine.dmpl__EligibleReturnQuantity__c, 'Eligible return quantity mismatch');
+        System.assertEquals(30000, billLine.dmpl__BaseAmount__c, 'Bill line base amount mismatch');
+        System.assertEquals(30000, billLine.dmpl__Amount__c, 'Bill line amount mismatch');
+        Test.stopTest();
+    }
+
+    @isTest
+    static void purchaseOrderwithPerformReleaseReceipt() {
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__TaxGroup__c taxGroupGST28 = TestDataHelpers.getTaxGroup('GST 28');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        System.assertNotEquals(purchaseOrder, null, 'Expected purchaseOrder to be created.');
+        System.assertEquals('Draft', purchaseOrder.dmpl__Status__c, 'Status should be Draft.');
+        System.assertEquals(supplier.Id, purchaseOrder.dmpl__SupplierAccountId__c, 'Supplier Account Id should be null.');
+        System.assertEquals(partner.Id, purchaseOrder.dmpl__PartnerAccountId__c, 'Partner Account Id should be null.');
+        System.assertEquals(branch.Id, purchaseOrder.dmpl__BranchId__c, 'Branch Id should be null.');
+        dmpl__PurchaseOrderLine__c updatedPurchaseOrderLine = PurchaseOrderTestDataHelpers.getPurchaseOrderLine(purchaseOrder.Id);
+        System.assertEquals(item.Id, updatedPurchaseOrderLine.dmpl__ItemId__c, 'ItemId should match.');
+        System.assertEquals(taxGroupGST28.Id, updatedPurchaseOrderLine.dmpl__TaxGroupId__c, 'TaxGroupId should match.');
+        System.assertEquals(20, updatedPurchaseOrderLine.dmpl__Quantity__c, 'Quantity should be 20.');
+        System.assertEquals(1500, updatedPurchaseOrderLine.dmpl__UnitCost__c, 'Unit cost should be 1500.');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax1__c, 'Tax1 should be 4200');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Name__c, 'Tax1Name should be CGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax1Rate__c, 'Tax1Rate should be 14');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Type__c, 'Tax1Type should be CGST');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax2__c, 'Tax2 should be 4200');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Name__c, 'Tax2Name should be SGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax2Rate__c, 'Tax2Rate should be 14');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Type__c, 'Tax2Type should be SGST');
+        System.assertEquals(30000, updatedPurchaseOrderLine.dmpl__BaseAmount__c, 'BaseAmount should be 30000');
+        System.assertEquals(8400, updatedPurchaseOrderLine.dmpl__TaxAmount__c, 'TaxAmount should be 8400');
+        System.assertEquals(38400, updatedPurchaseOrderLine.dmpl__GrossAmount__c, 'GrossAmount should be 38400');
+        Test.startTest();
+        purchaseOrder.dmpl__PerformReleaseInvoice__c = true;
+        update purchaseOrder;
+        purchaseOrder.dmpl__PerformReleaseReceipt__c = true;
+        update purchaseOrder;
+        Test.stopTest();
+        dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.getGoodsReceipt(purchaseOrder);
+    }
+
+    @isTest
+    static void purchaseOrderwithPerformKPICalculation() {
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__Resource__c resource = TestDataHelpers.createResource('Resource 2');
+        dmpl__TaxGroup__c taxGroupGST28 = TestDataHelpers.getTaxGroup('GST 28');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        System.assertNotEquals(purchaseOrder, null, 'Expected purchaseOrder to be created.');
+        System.assertEquals('Draft', purchaseOrder.dmpl__Status__c, 'Status should be Draft.');
+        System.assertEquals(supplier.Id, purchaseOrder.dmpl__SupplierAccountId__c, 'Supplier Account Id should be null.');
+        System.assertEquals(partner.Id, purchaseOrder.dmpl__PartnerAccountId__c, 'Partner Account Id should be null.');
+        System.assertEquals(branch.Id, purchaseOrder.dmpl__BranchId__c, 'Branch Id should be null.');
+        purchaseOrder.dmpl__ResourceId__c = resource.Id;
+        update purchaseOrder;
+        dmpl__PurchaseOrderLine__c updatedPurchaseOrderLine = PurchaseOrderTestDataHelpers.getPurchaseOrderLine(purchaseOrder.Id);
+        System.assertEquals(item.Id, updatedPurchaseOrderLine.dmpl__ItemId__c, 'ItemId should match.');
+        System.assertEquals(taxGroupGST28.Id, updatedPurchaseOrderLine.dmpl__TaxGroupId__c, 'TaxGroupId should match.');
+        System.assertEquals(20, updatedPurchaseOrderLine.dmpl__Quantity__c, 'Quantity should be 20.');
+        System.assertEquals(1500, updatedPurchaseOrderLine.dmpl__UnitCost__c, 'Unit cost should be 1500.');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax1__c, 'Tax1 should be 4200');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Name__c, 'Tax1Name should be CGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax1Rate__c, 'Tax1Rate should be 14');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Type__c, 'Tax1Type should be CGST');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax2__c, 'Tax2 should be 4200');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Name__c, 'Tax2Name should be SGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax2Rate__c, 'Tax2Rate should be 14');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Type__c, 'Tax2Type should be SGST');
+        System.assertEquals(30000, updatedPurchaseOrderLine.dmpl__BaseAmount__c, 'BaseAmount should be 30000');
+        System.assertEquals(8400, updatedPurchaseOrderLine.dmpl__TaxAmount__c, 'TaxAmount should be 8400');
+        System.assertEquals(38400, updatedPurchaseOrderLine.dmpl__GrossAmount__c, 'GrossAmount should be 38400');
+        Test.startTest();
+        purchaseOrder.dmpl__PerformKPICalculation__c = true;
+        update purchaseOrder;
+        dmpl__TaxGroup__c taxGroup = TestDataHelpers.createTaxGroup('GST 12', partner.Id, branch.Id);
+        taxGroup.dmpl__TaxGroupType__c = 'Document Level';
+        update taxGroup;
+        dmpl__Tax__c taxCGST = TestDataHelpers.createTax('CGST', taxGroup.Id, 6);
+        dmpl__TaxGroupRule__c taxGroupRule = TestDataHelpers.createTaxGroupRule(item.Id, taxGroup.Id);
+        purchaseOrder.dmpl__TaxGroupId__c = taxGroup.Id;
+        update purchaseOrder;
+        Test.stopTest();
+    }
+
+    @isTest
+    static void updatePurchaseOrderWithPriceAsOnDateEdit() {
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__Resource__c resource = TestDataHelpers.createResource('Resource 2');
+        dmpl__TaxGroup__c taxGroupGST28 = TestDataHelpers.getTaxGroup('GST 28');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        System.assertNotEquals(purchaseOrder, null, 'Expected purchaseOrder to be created.');
+        System.assertEquals('Draft', purchaseOrder.dmpl__Status__c, 'Status should be Draft.');
+        System.assertEquals(supplier.Id, purchaseOrder.dmpl__SupplierAccountId__c, 'Supplier Account Id should be null.');
+        System.assertEquals(partner.Id, purchaseOrder.dmpl__PartnerAccountId__c, 'Partner Account Id should be null.');
+        System.assertEquals(branch.Id, purchaseOrder.dmpl__BranchId__c, 'Branch Id should be null.');
+        dmpl__PurchaseOrderLine__c updatedPurchaseOrderLine = PurchaseOrderTestDataHelpers.getPurchaseOrderLine(purchaseOrder.Id);
+        System.assertEquals(item.Id, updatedPurchaseOrderLine.dmpl__ItemId__c, 'ItemId should match.');
+        System.assertEquals(taxGroupGST28.Id, updatedPurchaseOrderLine.dmpl__TaxGroupId__c, 'TaxGroupId should match.');
+        System.assertEquals(20, updatedPurchaseOrderLine.dmpl__Quantity__c, 'Quantity should be 20.');
+        System.assertEquals(1500, updatedPurchaseOrderLine.dmpl__UnitCost__c, 'Unit cost should be 1500.');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax1__c, 'Tax1 should be 4200');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Name__c, 'Tax1Name should be CGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax1Rate__c, 'Tax1Rate should be 14');
+        System.assertEquals('CGST', updatedPurchaseOrderLine.dmpl__Tax1Type__c, 'Tax1Type should be CGST');
+        System.assertEquals(4200, updatedPurchaseOrderLine.dmpl__Tax2__c, 'Tax2 should be 4200');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Name__c, 'Tax2Name should be SGST');
+        System.assertEquals(14, updatedPurchaseOrderLine.dmpl__Tax2Rate__c, 'Tax2Rate should be 14');
+        System.assertEquals('SGST', updatedPurchaseOrderLine.dmpl__Tax2Type__c, 'Tax2Type should be SGST');
+        System.assertEquals(30000, updatedPurchaseOrderLine.dmpl__BaseAmount__c, 'BaseAmount should be 30000');
+        System.assertEquals(8400, updatedPurchaseOrderLine.dmpl__TaxAmount__c, 'TaxAmount should be 8400');
+        System.assertEquals(38400, updatedPurchaseOrderLine.dmpl__GrossAmount__c, 'GrossAmount should be 38400');
+        Test.startTest();
+        purchaseOrder.dmpl__PriceAsOnDate__c = Date.today().addDays(2);
+        update purchaseOrder;
+        Test.stopTest();
+    }
 }

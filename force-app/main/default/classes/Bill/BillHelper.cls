@@ -242,7 +242,7 @@ public with sharing class BillHelper {
 
         List<dmpl__PurchaseOrderLine__c> pendingOrderLines = new List<dmpl__PurchaseOrderLine__c>();
         for(dmpl__PurchaseOrderLine__c purchaseOrderLine : purchaseOrderLines){
-            if(purchaseOrderLine.dmpl__PendingInvoiceQuantity__c>0){
+            if(purchaseOrderLine.dmpl__PendingInvoiceQuantity__c > 0){
                 pendingOrderLines.Add(purchaseOrderLine);
             }
         }
@@ -310,7 +310,7 @@ public with sharing class BillHelper {
 
         List<dmpl__GoodsReceiptLine__c> pendingGoodsReceiptLines = new List<dmpl__GoodsReceiptLine__c>();
         for(dmpl__GoodsReceiptLine__c goodsReceiptLine : goodsReceiptLines){
-            if(goodsReceiptLine.dmpl__PendingInvoiceQuantity__c>0){
+            if(goodsReceiptLine.dmpl__PendingInvoiceQuantity__c > 0){
                 pendingGoodsReceiptLines.Add(goodsReceiptLine);
             }
         }

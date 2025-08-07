@@ -2637,7 +2637,8 @@ public class FulfillmentHandler_Test {
         System.assertEquals(fullfillmentAllocationLine.Id, fulfillmentPickingLine1.dmpl__FulfillmentAllocationLineId__c, 'Allocation ref mismatch');
         System.assertEquals(fulfillment.Id, fulfillmentPickingLine1.dmpl__FulfillmentOrderId__c, 'Fulfillment ref mismatch');
     }
-     @isTest
+
+    @isTest
     public static void updateFulfillmentPickingLineWithDiscontinuedItemPositive() {
         Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
         Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
@@ -2684,4 +2685,243 @@ public class FulfillmentHandler_Test {
         System.assertEquals(2000, fulfillmentPickingLine.dmpl__UnitCost__c, 'Incorrect Picking Unit Cost');
         System.assertEquals(Date.today(), fulfillmentPickingLine.dmpl__DocumentDate__c, 'Incorrect Picking Document Date');
     }
+
+    @isTest
+    public static void updateFulfillmentPickingLineWithNoItemLotPositive(){
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item1 = TestDataHelpers.getItem('Item 1');    
+        Test.startTest();
+        dmpl__InventoryFulfillment__c fulfillment = FulfillmentTestDataHelpers.createInventoryFulfillment(
+            partner1,
+            customer1,
+            branch1,
+            null,
+            null
+        );
+        dmpl__InventoryFulfillmentOrderLine__c fulfillmentOrderLine = FulfillmentTestDataHelpers.createInventoryFulfillmentOrderLine(
+            fulfillment,
+            item1,
+            10,
+            1500,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+        dmpl__InventoryFulfillmentAllocationLine__c fulfillmentAllocationLine = FulfillmentTestDataHelpers.createInventoryFulfillmentAllocationLine(
+            item1,
+            10,
+            1500,
+            null,
+            null,
+            null,
+            fulfillment,
+            fulfillmentOrderLine
+        );
+        dmpl__InventoryFulfillmentPickingLine__c fulfillmentPickingLine = FulfillmentTestDataHelpers.createFulfillmentPickingLine(
+            fulfillment,
+            item1,
+            fulfillmentAllocationLine,
+            10,
+            1500,
+            5
+        );
+        fulfillmentPickingLine.dmpl__Quantity__c = 15;
+        update fulfillmentPickingLine;
+        Test.stopTest();
+        System.assertNotEquals(null, fulfillment.Id, 'Fulfillment should be created');
+        System.assertEquals(partner1.Id, fulfillment.dmpl__PartnerAccountId__c, 'Incorrect Partner Account');
+        System.assertEquals(branch1.Id, fulfillment.dmpl__BranchId__c, 'Incorrect Branch');
+        System.assertEquals(customer1.Id, fulfillment.dmpl__AccountId__c, 'Incorrect Customer Account');
+        System.assertEquals('Draft', fulfillment.dmpl__Status__c, 'Fulfillment status should be Draft');    
+        System.assertNotEquals(null, fulfillmentOrderLine.Id, 'Fulfillment Order Line should be created');
+        System.assertEquals(item1.Id, fulfillmentOrderLine.dmpl__ItemId__c, 'Incorrect Item in Order Line');
+        System.assertEquals(10, fulfillmentOrderLine.dmpl__Quantity__c, 'Incorrect Order Line Quantity');
+        System.assertEquals(1500, fulfillmentOrderLine.dmpl__UnitCost__c, 'Incorrect Order Line Unit Cost');   
+        System.assertNotEquals(null, fulfillmentAllocationLine.Id, 'Allocation Line should be created');
+        System.assertEquals(item1.Id, fulfillmentAllocationLine.dmpl__ItemId__c, 'Incorrect Item in Allocation Line');
+        System.assertEquals(10, fulfillmentAllocationLine.dmpl__Quantity__c, 'Incorrect Allocation Quantity');
+        System.assertEquals(1500, fulfillmentAllocationLine.dmpl__UnitCost__c, 'Incorrect Allocation Unit Cost');    
+        System.assertNotEquals(null, fulfillmentPickingLine.Id, 'Fulfillment Picking Line should be created');
+        System.assertEquals(item1.Id, fulfillmentPickingLine.dmpl__ItemId__c, 'Incorrect Item in Picking Line');
+        System.assertEquals(15, fulfillmentPickingLine.dmpl__Quantity__c, 'Incorrect Picking Quantity');
+        System.assertEquals(1500, fulfillmentPickingLine.dmpl__UnitCost__c, 'Incorrect Picking Unit Cost');
+    }
+
+    @isTest
+    public static void createFulfillmentPickingLineWithZeroQuantityPositive(){
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item1 = TestDataHelpers.getItem('Item 1');    
+        Test.startTest();
+        dmpl__InventoryFulfillment__c fulfillment = FulfillmentTestDataHelpers.createInventoryFulfillment(
+            partner1,
+            customer1,
+            branch1,
+            null,
+            null
+        );
+        dmpl__InventoryFulfillmentOrderLine__c fulfillmentOrderLine = FulfillmentTestDataHelpers.createInventoryFulfillmentOrderLine(
+            fulfillment,
+            item1,
+            10,
+            1500,
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+        dmpl__InventoryFulfillmentAllocationLine__c allocationLine = FulfillmentTestDataHelpers.createInventoryFulfillmentAllocationLine(
+            item1,
+            10,
+            1500,
+            null,
+            null,
+            null,
+            fulfillment,
+            fulfillmentOrderLine
+        );
+        dmpl__InventoryFulfillmentPickingLine__c pickingLine = FulfillmentTestDataHelpers.createFulfillmentPickingLine(
+            fulfillment,
+            item1,
+            allocationLine,
+            10,
+            1500,
+            5
+        );
+        Test.stopTest();
+        System.assertNotEquals(null, fulfillment.Id, 'Fulfillment should be created');
+        System.assertEquals(partner1.Id, fulfillment.dmpl__PartnerAccountId__c, 'Incorrect Partner Account');
+        System.assertEquals(branch1.Id, fulfillment.dmpl__BranchId__c, 'Incorrect Branch');
+        System.assertEquals(customer1.Id, fulfillment.dmpl__AccountId__c, 'Incorrect Customer Account');  
+        System.assertNotEquals(null, fulfillmentOrderLine.Id, 'Fulfillment Order Line should be created');
+        System.assertEquals(item1.Id, fulfillmentOrderLine.dmpl__ItemId__c, 'Incorrect Item in Order Line');
+        System.assertEquals(10, fulfillmentOrderLine.dmpl__Quantity__c, 'Incorrect Order Line Quantity');
+        System.assertEquals(1500, fulfillmentOrderLine.dmpl__UnitCost__c, 'Incorrect Order Line Unit Cost');    
+        System.assertNotEquals(null, allocationLine.Id, 'Allocation Line should be created');
+        System.assertEquals(item1.Id, allocationLine.dmpl__ItemId__c, 'Incorrect Item in Allocation Line');
+        System.assertEquals(10, allocationLine.dmpl__Quantity__c, 'Incorrect Allocation Quantity');
+        System.assertEquals(1500, allocationLine.dmpl__UnitCost__c, 'Incorrect Allocation Unit Cost');    
+        System.assertNotEquals(null, pickingLine.Id, 'Fulfillment Picking Line should be created');
+        System.assertEquals(item1.Id, pickingLine.dmpl__ItemId__c, 'Incorrect Item in Picking Line');
+        System.assertEquals(10, pickingLine.dmpl__Quantity__c, 'Incorrect Picking Quantity');
+        System.assertEquals(1500, pickingLine.dmpl__UnitCost__c, 'Incorrect Picking Unit Cost');
+    }
+
+    @isTest
+    private static void updateFulfillmentPickingLineWithZeroQuantityNegative() {
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1'); 
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1'); 
+        Account customerAccount1 = TestDataHelpers.getCustomerAccount('Customer 1'); 
+        dmpl__Item__c item1 = TestDataHelpers.getItem('Item 1');   
+        dmpl__SKU__c sku1 = TestDataHelpers.getSKU();
+        Test.startTest();
+        dmpl__InventoryFulfillment__c fulfillment = FulfillmentTestDataHelpers.createInventoryFulfillment(
+            partner1, 
+            customerAccount1, 
+            branch1, 
+            null, 
+            null
+        );
+        System.assertNotEquals(null, fulfillment.Id, 'Fulfillment should be created');
+        dmpl__InventoryFulfillmentOrderLine__c fulfillmentOrderLine = FulfillmentTestDataHelpers.createInventoryFulfillmentOrderLine(
+            fulfillment, 
+            item1, 
+            10, 
+            1500, 
+            null, 
+            null, 
+            sku1, 
+            null, 
+            null
+        );
+        System.assertNotEquals(null, fulfillmentOrderLine.Id, 'Fulfillment Order Line should be created');
+        dmpl__InventoryFulfillmentAllocationLine__c allocationLine = FulfillmentTestDataHelpers.createInventoryFulfillmentAllocationLine(
+            item1, 
+            10, 
+            sku1, 
+            fulfillment, 
+            fulfillmentOrderLine
+        );
+        System.assertNotEquals(null, allocationLine.Id, 'Fulfillment Allocation Line should be created');
+        dmpl__InventoryFulfillmentPickingLine__c pickingLine = FulfillmentTestDataHelpers.createFulfillmentPickingLine(
+            fulfillment, 
+            item1, 
+            allocationLine, 
+            null, 
+            10, 
+            2400, 
+            5, 
+            sku1
+        );
+        System.assertNotEquals(null, pickingLine.Id, 'Fulfillment Picking Line should be created');
+        try {
+            pickingLine.dmpl__Quantity__c = 0;
+            update pickingLine;
+            System.assert(true, 'Expected validation exception was not thrown');
+        } catch (Exception e) {
+            String errorMsg = e.getMessage().toLowerCase();
+            Boolean correctExceptionThrown = errorMsg.contains('dmpl__quantity__c') && errorMsg.contains('positive');    
+            System.assert(correctExceptionThrown,'Expected validation exception related to dmpl__Quantity__c requiring a positive number. Actual message: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    public static void updateFulfillmentPickingLineWithOrderLineReferencePositive(){
+        Account customer1 = TestDataHelpers.getCustomerAccount('Customer 1'); 
+        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1'); 
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1'); 
+        dmpl__Item__c item1 = TestDataHelpers.getItem('Item 1');   
+        dmpl__SKU__c sku1 = TestDataHelpers.getSKU();
+        Test.startTest();
+        dmpl__InventoryFulfillment__c fulfillment = FulfillmentTestDataHelpers.createInventoryFulfillment(
+            partner1,
+            customer1,
+            branch1,
+            null,
+            null
+        );
+        dmpl__InventoryFulfillmentOrderLine__c fulfillmentOrderLine = FulfillmentTestDataHelpers.createInventoryFulfillmentOrderLine(
+            fulfillment, 
+            item1, 
+            10, 
+            1500, 
+            null, 
+            null, 
+            sku1, 
+            null, 
+            null
+        );
+        dmpl__InventoryFulfillmentAllocationLine__c allocationLine = FulfillmentTestDataHelpers.createInventoryFulfillmentAllocationLine(
+            item1, 
+            5, 
+            1500, 
+            null, 
+            sku1,
+            null, 
+            fulfillment, 
+            fulfillmentOrderLine
+        );
+        dmpl__InventoryFulfillmentPickingLine__c pickingLine = FulfillmentTestDataHelpers.createFulfillmentPickingLine(
+            fulfillment, 
+            item1, 
+            allocationLine, 
+            5, 
+            1500, 
+            5
+        );
+        pickingLine.dmpl__Quantity__c = 10;
+        update pickingLine;
+        Test.stopTest();
+        dmpl__InventoryFulfillmentPickingLine__c retrieved = FulfillmentTestDataHelpers.getFulfillmentPickingLine(pickingLine.Id);
+        System.assertEquals(10, retrieved.dmpl__Quantity__c, 'Quantity should be updated to 10');
+        System.assertEquals(item1.Id, retrieved.dmpl__ItemId__c, 'Item should remain the same');
+        System.assertEquals(1500, retrieved.dmpl__UnitCost__c, 'Unit Cost should remain the same'); 
+    }  
 }

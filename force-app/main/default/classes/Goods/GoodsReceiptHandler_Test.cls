@@ -61,6 +61,7 @@ private class GoodsReceiptHandler_Test {
         receipt.dmpl__PerformInspection__c = false;
         receipt.dmpl__PerformInspectionComplete__c = false;
         receipt.dmpl__IsInspectionCompleted__c = false;
+        receipt.dmpl__PerformReleaseBill__c = false;
         update receipt;
         dmpl__GoodsReceipt__c updated = GoodRecieptsTestDataHelpers.getGoodsReceipt();
         Test.stopTest(); 
@@ -363,6 +364,8 @@ private class GoodsReceiptHandler_Test {
         Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
         dmpl__Item__c item = TestDataHelpers.createItem('Item 3', 'Product');
         dmpl__SKU__c sku = TestDataHelpers.getSKU('SKU 1');
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
         dmpl__GoodsReceipt__c goodsReceipt;
         try {
             goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
@@ -379,25 +382,41 @@ private class GoodsReceiptHandler_Test {
         } catch (Exception e) {
             System.Assert.isTrue(True, 'Goods Receipt Line is not created!' + e.getMessage());
         }
-        Test.stopTest();
-    }
-
-    @isTest
-    static void goodsReceiptWithPartnerBranchSupplierPositive(){
-        Test.startTest();
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
-        dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,goodsReceipt);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill is not created!' + e.getMessage());
+        }
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,goodsReceipt);
+            dmpl__BillLine__c billLine = BillTestDataHelpers.createBillLine(bill.Id, item.Id);
+            dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
                 partner, 
                 branch, 
-                null, 
-                supplier
-        );
-        dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt(goodsReceipt.Id);
-        System.assertEquals(partner.Id, receipt.dmpl__PartnerAccountId__c, 'Partner Account must match');
-        System.assertEquals(branch.Id, receipt.dmpl__BranchId__c, 'Branch must match');
-        System.assertEquals(supplier.Id, receipt.dmpl__SupplierAccountId__c, 'Supplier must match');
+                priceList
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,goodsReceipt);
+            dmpl__BillLine__c billLine = BillTestDataHelpers.createBillLine(bill.Id, item.Id);
+            dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+            );
+            dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(
+                bill, 
+                billReturn, 
+                item, 
+                billLine
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return Line is not created!' + e.getMessage());
+        }
         Test.stopTest();
     }
 
@@ -407,27 +426,32 @@ private class GoodsReceiptHandler_Test {
         Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
         dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
         Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,false);
         dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
-                dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+        dmpl__PurchaseOrder__c purchaseOrder2 = PurchaseOrderTestDataHelpers.createPurchaseOrder(supplier.Id,partner.Id,branch.Id);
+        dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
                 partner, 
                 branch, 
                 purchaseOrder, 
                 supplier
         );
+        try {
+            goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+                partner, 
+                branch, 
+                purchaseOrder2, 
+                supplier
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Goods Receipt is not created!' + e.getMessage());
+        }
         dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt(goodsReceipt.Id);
-        System.assertEquals(partner.Id, receipt.dmpl__PartnerAccountId__c, 'Partner Account must match');
-        System.assertEquals(branch.Id, receipt.dmpl__BranchId__c, 'Branch must match');
-        System.assertEquals(supplier.Id, receipt.dmpl__SupplierAccountId__c, 'Supplier must match');
-        Test.stopTest();
-    }
-
-    @isTest
-    static void goodsReceiptWithValidPartnerBranchSupplier(){
-        Test.startTest();
-        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
-        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
-        dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt();
+        dmpl__GoodsReceiptLine__c goodsReceiptLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(receipt, item, sku);
+        goodsReceiptLine.dmpl__DamagedQuantity__c=0;
+        update goodsReceiptLine;
         System.assertEquals(partner.Id, receipt.dmpl__PartnerAccountId__c, 'Partner Account must match');
         System.assertEquals(branch.Id, receipt.dmpl__BranchId__c, 'Branch must match');
         System.assertEquals(supplier.Id, receipt.dmpl__SupplierAccountId__c, 'Supplier must match');
@@ -450,6 +474,258 @@ private class GoodsReceiptHandler_Test {
             );
         } catch (Exception e) {
             System.Assert.isTrue(True, 'Goods Receipt is not created!' + e.getMessage());
+        }
+    }
+
+    @isTest
+    static void goodsReceiptAndGRLineWithPartnerBranchSupplierPositive(){
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,false);
+        Test.startTest();
+        dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt();
+        dmpl__GoodsReceiptLine__c goodsReceiptLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(receipt, item, sku);
+        Test.stopTest();
+        System.assertEquals(partner.Id, receipt.dmpl__PartnerAccountId__c, 'Partner Account must match');
+        System.assertEquals(branch.Id, receipt.dmpl__BranchId__c, 'Branch must match');
+        System.assertEquals(supplier.Id, receipt.dmpl__SupplierAccountId__c, 'Supplier must match');
+    }
+
+    @isTest
+    static void billReturnAndBillReturnLineWithInvalidPartnerBranch(){
+         Test.startTest();
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.createBranch('Branch 3',partner.Id);
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,false);
+        dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt();
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,receipt);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill is not created!' + e.getMessage());
+        }
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,receipt);
+            dmpl__BillLine__c billLine = BillTestDataHelpers.createBillLine(bill.Id, item.Id);
+            dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+        try {
+            dmpl__Bill__c bill = BillTestDataHelpers.createBill(supplier, branch, priceList,purchaseOrder,receipt);
+            dmpl__BillLine__c billLine = BillTestDataHelpers.createBillLine(bill.Id, item.Id);
+            dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+            );
+            dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(
+                bill, 
+                billReturn, 
+                item, 
+                billLine
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return Line is not created!' + e.getMessage());
+        }
+        Test.stopTest();
+    }
+
+    @isTest
+    static void goodsReceiptAndBillReturnBillReturnLineGRLineWithPartnerBranchSupplierPositive(){
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__Item__c item7 = TestDataHelpers.createItem('Item 7', 'Product');
+        item7.dmpl__IsSKURequired__c=true;
+        update item7;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 1',item7.Id,true);
+        dmpl__SKU__c sku2 = TestDataHelpers.createSKU('SKU 2',item.Id,true);
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        Test.startTest();
+        dmpl__GoodsReceipt__c receipt = GoodRecieptsTestDataHelpers.getGoodsReceipt();
+        dmpl__GoodsReceiptLine__c goodsReceiptLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(receipt, item, sku2);
+        goodsReceiptLine.dmpl__DamagedQuantity__c=0;
+        update goodsReceiptLine;
+        Test.stopTest();
+        System.assertEquals(0, goodsReceiptLine.dmpl__DamagedQuantity__c, 'Damaged Quantity should be 0');
+        System.assertEquals(partner.Id, receipt.dmpl__PartnerAccountId__c, 'Partner Account must match');
+        System.assertEquals(branch.Id, receipt.dmpl__BranchId__c, 'Branch must match');
+        System.assertEquals(supplier.Id, receipt.dmpl__SupplierAccountId__c, 'Supplier must match');
+        dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+        );
+        dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item7.Id, sku.Id);
+        System.assertNotEquals(null, billReturn, 'BillReturn should be created');
+        System.assertNotEquals(null, billReturnLine, 'BillReturnLine should be created');
+    }
+
+    @isTest
+    static void goodReceiptShouldNotCreatedInActivePartnerSupplierBranch(){
+        Account partner = TestDataHelpers.createPartnerAccount('Partner 2');
+        dmpl__Branch__c branch = TestDataHelpers.createBranch('Branch 2',partner.Id);
+        partner.dmpl__IsActive__c=false;
+        update partner;
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,true);
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__GoodsReceipt__c goodsReceipt;
+        dmpl__BillReturn__c billReturn;
+        try {
+            goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+                partner, 
+                branch, 
+                null, 
+                supplier
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Goods Receipt is not created!' + e.getMessage());
+        }
+        try {
+             billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+         try {
+            dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item.Id, sku.Id);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+        dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item.Id, sku.Id);
+    }
+
+     @isTest
+    static void goodReceiptShouldNotCreatedInActiveSupplierBranchAndPartner(){
+        Account partner = TestDataHelpers.createPartnerAccount('Partner 2');
+        dmpl__Branch__c branch = TestDataHelpers.createBranch('Branch 2',partner.Id);
+        partner.dmpl__IsActive__c=false;
+        update partner;
+        Account supplier = TestDataHelpers.createSupplierAccount('Supplier 2');
+        supplier.dmpl__IsActive__c=false;
+        update supplier;
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 8', 'Product');
+        item.dmpl__IsSKURequired__c=true;
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,true);
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__GoodsReceipt__c goodsReceipt;
+        dmpl__BillReturn__c billReturn;
+        try {
+            goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+                partner, 
+                branch, 
+                null, 
+                supplier
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Goods Receipt is not created!' + e.getMessage());
+        }
+        try {
+             billReturn = BillTestDataHelpers.createBillReturn(
+                supplier, 
+                partner, 
+                branch, 
+                priceList
+            );
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+         try {
+            dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item.Id, sku.Id);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
+        }
+        dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item.Id, sku.Id);
+    }
+
+    @isTest
+    static void goodsReceiptLineShouldNotGetCreatedWithInactiveItemSKU(){
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 2', 'Product');
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,true);
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        item.dmpl__IsActive__c=false;
+        update item;
+        Test.startTest();
+        dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+                partner, 
+                branch, 
+                purchaseOrder, 
+                supplier
+        );
+        try {
+            dmpl__GoodsReceiptLine__c goodsReceiptLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(goodsReceipt, item, sku);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Goods Receipt Line is not created!' + e.getMessage());
+        }
+    }
+
+    @isTest
+    static void billReturnLineShouldNotGetCreatedWithInactiveItemSKU(){
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 2', 'Product');
+        dmpl__SKU__c sku = TestDataHelpers.createSKU('SKU 2',item.Id,true);
+        dmpl__PriceList__c priceList = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__PurchaseOrder__c purchaseOrder = PurchaseOrderTestDataHelpers.getPurchaseOrder();
+        item.dmpl__IsActive__c=false;
+        update item;
+        Test.startTest();
+        dmpl__GoodsReceipt__c goodsReceipt = GoodRecieptsTestDataHelpers.createGoodsReceipt(
+                partner, 
+                branch, 
+                null, 
+                supplier
+        );
+        try {
+            dmpl__GoodsReceiptLine__c goodsReceiptLine = GoodRecieptsTestDataHelpers.createGoodReceiptLine(goodsReceipt, item, sku);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Goods Receipt Line is not created!' + e.getMessage());
+        }
+        dmpl__BillReturn__c billReturn = BillTestDataHelpers.createBillReturn(
+                partner, 
+                branch, 
+                goodsReceipt.Id
+        );
+        try {
+            dmpl__BillReturnLine__c billReturnLine = BillTestDataHelpers.createBillReturnLine(billReturn.Id, item.Id, sku.Id);
+        } catch (Exception e) {
+            System.Assert.isTrue(True, 'Bill Return is not created!' + e.getMessage());
         }
     }
 }

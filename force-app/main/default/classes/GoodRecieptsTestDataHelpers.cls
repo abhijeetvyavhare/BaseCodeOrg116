@@ -84,7 +84,8 @@ public class GoodRecieptsTestDataHelpers {
                 dmpl__PerformInspection__c, 
                 dmpl__PerformInspectionComplete__c, 
                 dmpl__PerformPopulateChecklist__c, 
-                dmpl__PerformAllocation__c
+                dmpl__PerformAllocation__c,
+            	dmpl__SupplierAccountId__c
             FROM dmpl__GoodsReceipt__c
             LIMIT 1
         ];
@@ -115,6 +116,35 @@ public class GoodRecieptsTestDataHelpers {
                 dmpl__SupplierAccountId__c
             FROM dmpl__GoodsReceipt__c
             WHERE Id = :id
+            LIMIT 1
+        ];
+    }
+
+    public static dmpl__GoodsReceipt__c getGoodsReceipt(
+        dmpl__PurchaseOrder__c purchaseOrder
+    ) {
+        return [
+            SELECT
+                Id, 
+                name, 
+                dmpl__DocumentDate__c, 
+                dmpl__ShipmentId__c, 
+                dmpl__BranchId__c, 
+                dmpl__PartnerAccountId__c, 
+                dmpl__IsClaimed__c, 
+                dmpl__Status__c, 
+                dmpl__IsBillGenerated__c, 
+                dmpl__PerformReceive__c, 
+                dmpl__IsInspectionCompleted__c, 
+                dmpl__PerformReceiveAsync__c, 
+                dmpl__PerformInspection__c, 
+                dmpl__PerformInspectionComplete__c, 
+                dmpl__PerformPopulateChecklist__c, 
+                dmpl__PerformAllocation__c, 
+                dmpl__SupplierAccountId__c,
+                dmpl__PurchaseOrderId__c
+            FROM dmpl__GoodsReceipt__c
+            WHERE dmpl__PurchaseOrderId__c = :purchaseOrder.Id
             LIMIT 1
         ];
     }
@@ -186,6 +216,27 @@ public class GoodRecieptsTestDataHelpers {
             new dmpl__GoodsReceiptLine__c(
                 dmpl__GoodsReceiptId__c = goodReceiptId,
                 dmpl__ItemId__c = itemId,
+                dmpl__OrderedQuantity__c = orderedQuantity,
+                dmpl__ReceivedQuantity__c = recievedQuantity,
+                dmpl__SupplierQuantity__c = supplierQuantity
+            ),
+            true
+        );
+    }
+
+    public static dmpl__GoodsReceiptLine__c createGoodsReceiptLine(
+        Id goodReceiptId,
+        Id itemId,
+        Id skuId,
+        Integer orderedQuantity,
+        Integer recievedQuantity,
+        Integer supplierQuantity
+    ) {
+        return (dmpl__GoodsReceiptLine__c)TestFactory.createSObject(
+            new dmpl__GoodsReceiptLine__c(
+                dmpl__GoodsReceiptId__c = goodReceiptId,
+                dmpl__ItemId__c = itemId,
+                dmpl__SKUId__c = skuId,
                 dmpl__OrderedQuantity__c = orderedQuantity,
                 dmpl__ReceivedQuantity__c = recievedQuantity,
                 dmpl__SupplierQuantity__c = supplierQuantity

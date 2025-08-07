@@ -74,7 +74,7 @@ public with sharing class PaymentAdjustmentHelper {
             List<dmpl__PaymentAdjustment__c> insertedAdjustments = new List<dmpl__PaymentAdjustment__c>();
             for(Object document : documents){
                 Map<Object,Object> documentMap = (Map<Object,Object>) document;
-                insertedAdjustments.add(createPaymentAdjustment(documentMap));
+                insertedAdjustments.add(createPaymentAdjustment(documpostPOAdjustmentsentMap));
             }
             insert insertedAdjustments;
             return insertedAdjustments;

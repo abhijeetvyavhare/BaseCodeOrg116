@@ -46,6 +46,32 @@ public class RepairOrderTestDataHelpers {
             true
         );
     }
+
+    public static dmpl__RepairOrder__c createRepairOrder(
+        dmpl__Item__c item,
+        dmpl__branch__c branch,
+        Asset asset,
+        dmpl__QuoteLine__c quoteLine,
+        dmpl__Quote__c serviceEstimate,
+        Account customerAccount,
+        dmpl__ServiceRequest__c ServiceRequest
+    ) { 
+        return (dmpl__RepairOrder__c) TestFactory.createSObject(
+            new dmpl__RepairOrder__c (
+                dmpl__BranchId__c = branch?.Id,
+                dmpl__AccountId__c = customerAccount?.Id,
+                dmpl__PartnerAccountId__c = branch?.dmpl__PartnerAccountId__c,
+                dmpl__ServiceEstimateId__c = serviceEstimate?.Id,
+                dmpl__UsageReading__c = 65.00,
+                dmpl__ServiceContractItemId__c = quoteLine?.dmpl__ServiceContractId__c,
+                dmpl__ServiceRequestId__c = ServiceRequest?.Id,
+                dmpl__ResetUsageReading__c = false,
+                dmpl__ResetUsageHours__c = false
+            ),
+            'RepairOrderDefaults',
+            true
+        );
+    }
     
     public static dmpl__RepairOrderLine__c createRepairOrderLine(
         Id repairOrderId,
@@ -60,6 +86,26 @@ public class RepairOrderTestDataHelpers {
                 dmpl__Quantity__c = quantity,
                 dmpl__UnitPrice__c = unitPrice,
                 dmpl__PostingType__c = 'Generate Claims'
+            ),
+            true
+        );
+    }
+
+    public static dmpl__RepairOrderLine__c createRepairOrderLine(
+        Id repairOrderId,
+        Id itemId,
+        Id priceListId,
+        Id itemServiceContractId,
+        Decimal quantity
+    ){
+        return (dmpl__RepairOrderLine__c) TestFactory.createSObject(
+            new dmpl__RepairOrderLine__c(
+                dmpl__RepairOrderId__c = repairOrderId,
+                dmpl__ItemId__c = itemId,
+                dmpl__Quantity__c = quantity,
+                dmpl__PostingType__c = 'Generate Claims',
+                dmpl__PriceListId__c = priceListId,
+                dmpl__ItemServiceContractId__c = itemServiceContractId
             ),
             true
         );
@@ -142,6 +188,10 @@ public class RepairOrderTestDataHelpers {
                 dmpl__ServiceEstimateId__c,
                 dmpl__ServiceAdvisorId__c,
                 dmpl__UsageReading__c,
+                dmpl__DocumentDate__c,
+                dmpl__ResetUsageHours__c,
+                dmpl__ResetUsageReading__c,
+                dmpl__UsageReadingHours__c,
                 dmpl__PriceListId__c
             FROM dmpl__RepairOrder__c 
             LIMIT 1
@@ -378,7 +428,7 @@ public class RepairOrderTestDataHelpers {
                 dmpl__BranchId__c = branch.Id,
                 dmpl__AccountId__c = customerAccount.Id,
                 dmpl__PartnerAccountId__c = partnerAccount.Id,
-                dmpl__AssetId__c = asset.Id,
+                dmpl__AssetId__c = asset?.Id,
                 dmpl__UsageReading__c = usageReading,
                 dmpl__DocumentDate__c = System.today(),
                 dmpl__Status__c = 'Draft'

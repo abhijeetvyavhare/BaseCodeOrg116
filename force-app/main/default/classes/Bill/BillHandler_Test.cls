@@ -35,13 +35,17 @@ public with sharing class BillHandler_Test {
  
     @isTest
     static void updateBillPositive() {
+        Test.startTest();
         dmpl__Bill__c bill = BillTestDataHelpers.getBill();
         System.assertNotEquals(bill, null, 'Bill should exist before update.');
         bill.dmpl__TCSEligibleAmount__c = 210;
         bill.dmpl__SupplierInvoiceAmount__c = 69;
-        bill.dmpl__Remarks__c='Hello';
+        bill.dmpl__Remarks__c = 'Hello';
+        bill.dmpl__PerformGLPosting__c = true;
+        bill.dmpl__PerformKPICalculation__c = false;
         update bill;
         dmpl__Bill__c updatedBill = BillTestDataHelpers.getBill();
+        Test.stopTest();
         System.assertEquals(210, updatedBill.dmpl__TCSEligibleAmount__c, 'TCSEligibleAmount should be 210');
         System.assertEquals(69, updatedBill.dmpl__SupplierInvoiceAmount__c, 'SupplierInvoiceAmount should be 69');
         System.assertEquals('Hello', updatedBill.dmpl__Remarks__c, 'Remarks should be Hello');
@@ -193,7 +197,7 @@ public with sharing class BillHandler_Test {
         System.assertEquals('Partner 4', updatedBill.dmpl__AccountName__c, 'Account Name should be Partner 4');
     }
 
-    @isTest()
+    @isTest
     static void createBillLineWithNoRequiredSKU() {
         Test.startTest();
         Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
@@ -205,7 +209,7 @@ public with sharing class BillHandler_Test {
         dmpl__Bill__c newBill = BillTestDataHelpers.createBill(supplier.Id, branch.Id, partner.Id);
         dmpl__Bill__c updatedBill = BillTestDataHelpers.getBill(newBill.Id);
         System.assertEquals(partner.Id, updatedBill.dmpl__PartnerAccountId__c, 'Partner mismatch');
-        System.assertEquals(branch.Id, updatedBill.dmpl__BranchId__c, 'Branch mismatch');
+        System.assertEquals(branch.Id, updatedBill.dmpl__BranchId__c, 'Branch mismatch');   
         System.assertEquals(Date.today(), updatedBill.dmpl__DocumentDate__c, 'Document date mismatch');
         System.assertEquals('Partner 4', updatedBill.dmpl__AccountName__c, 'Account Name mismatch');
         dmpl__BillLine__c billLine = BillTestDataHelpers.createBillLine(
@@ -229,4 +233,20 @@ public with sharing class BillHandler_Test {
         System.assertEquals(0, finalBill.dmpl__TotalSchemeDiscountAmount__c, 'Final net scheme discount mismatch');
         Test.stopTest();
     } 
+
+    @isTest
+    static void createBillFromGoodsReceipt() {
+        Test.startTest();
+        Account supplier = TestDataHelpers.getSupplierAccount('Supplier 1');
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 4');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 4');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 7');
+        dmpl__SKU__c sku = TestDataHelpers.getSKU('SKU 1');
+        BillMasterData.createGoodsReceiptAndGoodsReceiptLines(partner, supplier, branch, item, sku);
+        List<dmpl__GoodsReceipt__c> goodsReceipts = new List<dmpl__GoodsReceipt__c>{
+            GoodRecieptsTestDataHelpers.getGoodsReceipt()
+        };
+        BillHelper.createBillFromGoodsReceipt(goodsReceipts);
+        Test.stopTest();
+    }
 }

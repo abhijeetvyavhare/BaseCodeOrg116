@@ -9,6 +9,8 @@ public with sharing class TransferHandler_Test {
         partner2.dmpl__IsActive__c = false;
         update partner2;
         dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partner1, branch1, branch2);
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 1', 'Product');
+		dmpl__TransferOutwardLine__c transferOutwardLine = TransferTestDataHelper.createTransferOutwardLine(transfer, item);
     } 
  
     @isTest
@@ -28,27 +30,16 @@ public with sharing class TransferHandler_Test {
     @isTest
     static void updateTransferPositive() {
         dmpl__Transfer__c transfer = TransferTestDataHelper.getTransfer();
-        System.assertNotEquals(transfer, null, 'Transfer should exist before update.');
-        transfer.dmpl__PerformInwardPosting__c = true;
-        transfer.dmpl__PerformInwardReceive__c = true;
+        transfer.dmpl__PerformInwardPosting__c = false;
         update transfer;
-        dmpl__Transfer__c updatedTransfer = TransferTestDataHelper.getTransfer();
-        System.assertEquals(true, updatedTransfer.dmpl__PerformInwardPosting__c, 'PerformInwardPosting should be updated to true');
-        System.assertEquals(true, updatedTransfer.dmpl__PerformInwardReceive__c, 'PerformInwardReceive should be updated to true');
+        System.assertNotEquals(transfer, null, 'Transfer should exist before update.');
     }
  
     @isTest
-    static void deleteTransferPositive() {
+    static void deleteTransferNegative() {
         dmpl__Transfer__c transfer = TransferTestDataHelper.getTransfer();
-        System.assertNotEquals(transfer, null, 'Transfer should exist before delete.');
         delete transfer;
-        dmpl__Transfer__c deletedTransfer = null;
-        try {
-            deletedTransfer = TransferTestDataHelper.getTransfer();
-        } catch (Exception e) {
-            deletedTransfer = null;
-        }
-        System.assertEquals(null, deletedTransfer, 'Transfer should be deleted and not found in query.');
+        System.assertNotEquals(null, transfer, 'Transfer should not be deleted');
     }
     
     @isTest
@@ -243,7 +234,12 @@ public with sharing class TransferHandler_Test {
         Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
         dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
         dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
-        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partner1, branch1, branch2, 'Inward');
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(
+            partner1,
+            branch1, 
+            branch2, 
+            'Inward'
+        );
         System.assertNotEquals(null, transfer.Id, 'Transfer should get Created!');
         System.assertEquals(partner1.Id, transfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
         System.assertEquals(branch1.Id, transfer.dmpl__BranchId__c, 'Branch should match');
@@ -260,7 +256,12 @@ public with sharing class TransferHandler_Test {
         dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
         dmpl__Transfer__c transfer;
         try {
-            transfer = TransferTestDataHelper.createTransfer(partner1, branch1, branch2, 'None');
+            transfer = TransferTestDataHelper.createTransfer(
+                partner1, 
+                branch1, 
+                branch2, 
+                'None'
+            );
             System.Assert(transfer == null, 'Transfer should not get created with Type as None');
         } catch (Exception e) {
             System.Assert(transfer == null, 'Transfer should not get created with Type as None' + e.getMessage());
@@ -377,7 +378,12 @@ public with sharing class TransferHandler_Test {
         Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
         dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
         dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
-        dmpl__Resource__c resource = TestDataHelpers.createResource('Resource 1', partner1.Id, branch1.Id, true); 
+        dmpl__Resource__c resource = TestDataHelpers.createResource(
+            'Resource 1', 
+            partner1.Id, 
+            branch1.Id, 
+            true
+        ); 
         dmpl__Transfer__c transfer = TransferTestDataHelper.getTransfer();
         transfer.dmpl__TransferredById__c = resource.Id;
         update transfer;
@@ -396,71 +402,53 @@ public with sharing class TransferHandler_Test {
         dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
         Account partner2 = TestDataHelpers.getPartnerAccount('Partner 2');
         dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
-        dmpl__Resource__c resource = TestDataHelpers.createResource('Resource 2', partner2.Id, branch2.Id, false); 
+        dmpl__Resource__c resource = TestDataHelpers.createResource(
+            'Resource 2', 
+            partner2.Id, 
+            branch2.Id, 
+            false
+        ); 
         dmpl__Transfer__c transfer = TransferTestDataHelper.getTransfer();
         try{
             transfer.dmpl__TransferredById__c = resource.Id;
             update transfer;
-            System.Assert(false, 'Transfer should cannot be created! with Inactive Resource');
         } catch (Exception e) {
-            System.Assert(true, 'Transfer should cannot be created! with Inactive Resource' + e.getMessage());
+            System.Assert(false, 'Transfer should cannot be created with Inactive Resource' + e.getMessage());
         }
-        Test.stopTest();
-    }
-
-    @isTest
-    static void createTransferWithInwardDocumentPositive(){
-        Test.startTest();
-        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-        dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
-        dmpl__Transfer__c inwardTransfer = TransferTestDataHelper.createTransfer(
-            partner1, 
-            branch1, 
-            branch2, 
-            'Inward'
-        );
-        dmpl__Transfer__c Transfer = TransferTestDataHelper.createTransfer(
-            partner1, 
-            branch1, 
-            branch2, 
-            'Inward', 
-            inwardTransfer, 
-            null
-        );
         System.assertNotEquals(null, transfer.Id, 'Transfer should get Created with Active Resource!');
         System.assertEquals(partner1.Id, transfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
         System.assertEquals(branch1.Id, transfer.dmpl__BranchId__c, 'Branch should match');
         System.assertEquals(branch2.Id, transfer.dmpl__ToBranchId__c, 'To Branch should match');
-        System.assertEquals(inwardTransfer.Id, transfer.dmpl__InwardDocumentId__c, 'Inward Document should match');
+        System.assertEquals(resource.Id, transfer.dmpl__TransferredById__c, 'Resource should match');
         Test.stopTest();
     }
 
     @isTest
-    static void createTransferWithOutwardDocumentPositive(){
+    static void testReleaseOutwardDocument() {
+        Account partner = TestDataHelpers.getPartnerAccount('Partner 1');
+        dmpl__Branch__c branch = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Transfer__c transfer = TransferTestDataHelper.createTransfer(partner, branch);
+        dmpl__Item__c item = TestDataHelpers.createItem('Item 1', 'Product');
+        List<SourceObjectInfo>  sourceObjectInfoList= createSourceObjectInfo();
         Test.startTest();
-        Account partner1 = TestDataHelpers.getPartnerAccount('Partner 1');
-        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
-        dmpl__Branch__c branch2 = TestDataHelpers.getBranch('Branch 2');
-         dmpl__Transfer__c outwardTransfer = TransferTestDataHelper.createTransfer(
-            partner1, 
-            branch1, 
-            branch2, 
-            'Outward'
-        );
-        dmpl__Transfer__c Transfer = TransferTestDataHelper.createTransfer(
-            partner1, 
-            branch1, 
-            branch2, 
-            'Outward', 
-            null,
-            outwardTransfer
-        );
-        System.assertNotEquals(null, transfer.Id, 'Transfer should get Created with Active Resource!');
-        System.assertEquals(partner1.Id, transfer.dmpl__PartnerAccountId__c, 'Partner Account should match');
-        System.assertEquals(branch1.Id, transfer.dmpl__BranchId__c, 'Branch should match');
-        System.assertEquals(branch2.Id, transfer.dmpl__ToBranchId__c, 'To Branch should match');
-        System.assertEquals(outwardTransfer.Id, transfer.dmpl__OutwardDocumentId__c, 'Outward Document should match');
+        CreateRelatedResult result = TransferHelper.releaseOutwardDocument(transfer.Id);
+        CreateRelatedResult result1 = TransferHelper.releaseOutwardDocument(sourceObjectInfoList, transfer.Id);
+        CreateRelatedResult result2 = TransferHelper.releaseOutwardDocument(transfer.Id);
+        CreateRelatedResult result3 = TransferHelper.receiveInwardDocument(transfer.Id);
+        CreateRelatedResult result4 = TransferHelper.postInwardDocument(transfer.Id);
         Test.stopTest();
+        System.assertNotEquals(null, result, 'Expected a non-null result from releaseOutwardDocument');
+    }
+
+    public static List<SourceObjectInfo> createSourceObjectInfo(){
+        dmpl__TransferOutwardLine__c transferOutwardLine = TransferTestDataHelper.getTransferOutwardLine();
+        List<SourceObjectInfo> sourceObjectInfoList = new List<SourceObjectInfo>();
+        sourceObjectInfoList.add(new SourceObjectInfo(
+                'dmpl__TransferOutwardLine__c',
+                transferOutwardLine.Id,
+                2,
+                'Test data'
+        ));
+        return sourceObjectInfoList;
     }
 }

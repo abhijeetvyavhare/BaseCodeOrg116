@@ -25,7 +25,7 @@ private class RepairOrderHandler_Test {
             item1
         );
         dmpl__ItemServiceContract__c itemServiceContract = RepairOrderTestDataHelpers.createItemServiceContract(item1, sku);
-        dmpl__QuoteLine__c quoteLine = QuoteTestDataHelpers.CreateServiceEstimateLine(
+        dmpl__QuoteLine__c quoteLine = QuoteTestDataHelpers.CreateServiceEstimateLine(  
             item1,
             priceListRule1,
             taxGroupGST28partner,
@@ -55,7 +55,7 @@ private class RepairOrderHandler_Test {
     }
 
     @isTest
-    static void updateRepairOrderPositive() {
+      static void updateRepairOrderPositive() {
         dmpl__RepairOrder__c existingOrder = RepairOrderTestDataHelpers.getRepairOrder();
         Test.startTest();
         existingOrder.dmpl__UsageReading__c = 70.00;
@@ -1517,4 +1517,113 @@ private class RepairOrderHandler_Test {
         }
         Test.stopTest();
     }
+
+    @isTest
+    static void createClaimFromRepairOrderPositive() {
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__TaxGroup__c taxGroup = TestDataHelpers.getTaxGroup();
+        dmpl__RepairOrder__c createdOrder = RepairOrderTestDataHelpers.getRepairOrder();
+        system.assertNotEquals(null, createdOrder, 'Repair Order should be created successfully');
+        dmpl__RepairOrderLine__c repairOrderLine = RepairOrderTestDataHelpers.createRepairOrderLineWithTaxGroup(
+            createdOrder,
+            item,
+            taxGroup,
+            1,
+            1500
+            );
+        system.assertNotEquals(null, repairOrderLine, 'Repair Order Line should be created successfully');
+        createdOrder.dmpl__PerformInvoiceGeneration__c = true;
+        createdOrder.dmpl__Status__c = 'Billing';
+        Test.startTest();
+        update createdOrder;
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createFulfillmentFromRepairOrderPositive() {
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        dmpl__TaxGroup__c taxGroup = TestDataHelpers.getTaxGroup();
+        dmpl__RepairOrder__c createdOrder = RepairOrderTestDataHelpers.getRepairOrder();
+        system.assertNotEquals(null, createdOrder, 'Repair Order should be created successfully');
+        dmpl__RepairOrderLine__c repairOrderLine = RepairOrderTestDataHelpers.createRepairOrderLineWithTaxGroup(
+            createdOrder,
+            item,
+            taxGroup,
+            1,
+            1500
+            );
+        system.assertNotEquals(null, repairOrderLine, 'Repair Order Line should be created successfully');
+        createdOrder.dmpl__PerformReleaseForFulfillment__c = true;
+        createdOrder.dmpl__IsReleasedForFulfillment__c = false;
+        createdOrder.dmpl__PerformPopulateChecklist__c = true;
+        createdOrder.dmpl__PerformGenerateQuote__c = true;
+        createdOrder.dmpl__IsQuoteGenerated__c = false;
+        createdOrder.dmpl__PerformInventoryPosting__c = true;
+        createdOrder.dmpl__IsILPosted__c = false;
+        createdOrder.dmpl__PerformKPICalculation__c = true;
+        createdOrder.dmpl__IsKPICalculated__c = false;
+        Test.startTest();
+        update createdOrder;
+        Test.stopTest();
+    }
+
+    @isTest
+    static void createServiceRequestFromRepairOrderPositive() {
+        Account partnerAccount1 = TestDataHelpers.getPartnerAccount('Partner 1');
+        Account customerAccount1 = TestDataHelpers.getCustomerAccount('Customer 1');
+        dmpl__Branch__c branch1 = TestDataHelpers.getBranch('Branch 1');
+        dmpl__Item__c item = TestDataHelpers.getItem('Item 1');
+        item.dmpl__ItemType__c = 'Service Contract';
+        update item;
+        dmpl__SKU__c sku = TestDataHelpers.getSKU();
+        dmpl__TaxGroup__c taxGroup = TestDataHelpers.getTaxGroup();
+        Asset asset1 = AssetTestDataHelpers.getAsset();
+        dmpl__PriceList__c priceList1 = TestDataHelpers.getPriceList('Price List 1');
+        dmpl__PriceListRules__c priceListRule = TestDataHelpers.getPriceListRules(priceList1.Id);
+        dmpl__ServiceRequest__c serviceRequest = ServiceRequestTestDataHelpers.createServiceRequestWithId(
+			partnerAccount1,
+			customerAccount1,
+			branch1,
+			asset1
+		);
+		dmpl__ServiceRequestline__c serviceRequestLine = ServiceRequestTestDataHelpers.createServiceRequestLine(serviceRequest, item, sku);
+        dmpl__Quote__c serviceEstimate = QuoteTestDataHelpers.CreateServiceEstimate(
+            branch1,
+            customerAccount1,
+            priceList1,
+            asset1,
+            serviceRequest,
+            item
+        );
+        dmpl__QuoteLine__c quoteLine = QuoteTestDataHelpers.CreateServiceEstimateLine(
+            item,
+            priceListRule,
+            taxGroup,
+            null,
+            serviceEstimate
+        );        
+        Test.startTest();
+        quoteLine.dmpl__PostingType__c = 'Generate Invoices';
+        update quoteLine;
+        dmpl__RepairOrder__c repairOrder = RepairOrderTestDataHelpers.createRepairOrder(
+            item,
+            branch1,
+            asset1,
+            QuoteLine,
+            serviceEstimate,
+            customerAccount1,
+            serviceRequest
+        );
+        system.assertNotEquals(null, repairOrder, 'Repair Order should be created successfully');
+        dmpl__RepairOrderLine__c repairOrderLine = RepairOrderTestDataHelpers.createRepairOrderLineWithTaxGroup(
+            repairOrder,
+            item,
+            taxGroup,
+            1,
+            1500
+        );
+        system.assertNotEquals(null, repairOrderLine, 'Repair Order Line should be created successfully');
+        update repairOrder;
+        Test.stopTest();
+    }   
 }

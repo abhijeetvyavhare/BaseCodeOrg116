@@ -11,7 +11,7 @@ public with sharing class PaymentHandler_Test {
         dmpl__SaleInvoice__c saleInvoice = SaleInvoiceTestDataHelpers.createSaleInvoice(
             customerAccount,
             branch,
-            saleOrder,
+            saleOrder,FIELD_PAYMENT_AMOUNT
             priceList
         );
         dmpl__Payment__c payment = PaymentTestDataHelpers.createPayment(
